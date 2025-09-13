@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Timer & Stopwatch</title>
+  <style>
+    :root{ --bg:#0b1022; --panel:#0f172a; --text:#e5e7eb; --muted:#94a3b8; --accent:#38bdf8; --ok:#22c55e; --bad:#ef4444 }
+    *{ box-sizing:border-box }
+    body{ margin:0; min-height:100vh; display:grid; place-items:center; background:radial-gradient(900px 600px at 15% 0%, #111827, #0b1022 60%, #050814); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial }
+    .app{ width:min(820px,94vw); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:18px; box-shadow:0 10px 40px rgba(0,0,0,.5) }
+    h1{ margin:0 0 8px 0; font-size:28px }
+    .tabs{ display:flex; gap:8px; margin-bottom:12px }
+    .tab{ flex:1; text-align:center; padding:10px 12px; border-radius:10px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); color:var(--muted); cursor:pointer }
+    .tab.active{ color:var(--text); background:rgba(255,255,255,.12) }
+    .panel{ background:var(--panel); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:14px }
+    .time{ font-size:48px; letter-spacing:1px; text-align:center; margin:14px 0; font-variant-numeric:tabular-nums }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); cursor:pointer; font-weight:600 }
+    .btn.primary{ background:linear-gradient(180deg,#38bdf8,#0284c7); border-color:rgba(56,189,248,.5) }
+    .btn.ok{ background:linear-gradient(180deg,#22c55e,#16a34a); border-color:rgba(34,197,94,.5) }
+    .btn.bad{ background:linear-gradient(180deg,#ef4444,#b91c1c); border-color:rgba(239,68,68,.5) }
+    .grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-top:10px }
+    .input{ width:100%; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:var(--text) }
+    .list{ max-height:220px; overflow:auto; margin-top:10px }
+    .lap{ display:flex; justify-content:space-between; padding:8px 10px; border-bottom:1px dashed rgba(255,255,255,.1) }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Timer & Stopwatch</h1>
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-tab="timer">Timer</div>
+      <div class="tab" data-tab="stopwatch">Stopwatch</div>
+    </div>
+
+    <div id="timerPanel" class="panel">
+      <div class="time" id="timerDisplay">00:05:00</div>
+      <div class="row">
+        <button id="tStart" class="btn primary">Start</button>
+        <button id="tPause" class="btn">Pause</button>
+        <button id="tReset" class="btn ok">Reset</button>
+      </div>
+      <div class="grid">
+        <input id="tHours" class="input" type="number" min="0" max="23" value="0" />
+        <input id="tMinutes" class="input" type="number" min="0" max="59" value="5" />
+        <input id="tSeconds" class="input" type="number" min="0" max="59" value="0" />
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" data-preset="300">5 min</button>
+        <button class="btn" data-preset="600">10 min</button>
+        <button class="btn" data-preset="1500">25 min</button>
+      </div>
+    </div>
+
+    <div id="stopwatchPanel" class="panel" style="margin-top:12px">
+      <div class="time" id="swDisplay">00:00:00.00</div>
+      <div class="row">
+        <button id="swStart" class="btn primary">Start</button>
+        <button id="swLap" class="btn">Lap</button>
+        <button id="swPause" class="btn">Pause</button>
+        <button id="swReset" class="btn ok">Reset</button>
+      </div>
+      <div class="list" id="laps"></div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const tabs = document.getElementById('tabs');
+      const timerPanel = document.getElementById('timerPanel');
+      const stopwatchPanel = document.getElementById('stopwatchPanel');
+
+      // Tabs
+      tabs.addEventListener('click', (e)=>{
+        const t = e.target.closest('.tab'); if(!t) return;
+        [...tabs.children].forEach(x=> x.classList.toggle('active', x===t));
+        const tab = t.dataset.tab;
+        timerPanel.style.display = tab==='timer' ? '' : 'none';
+        stopwatchPanel.style.display = tab==='stopwatch' ? '' : 'none';
+      });
+
+      // Timer
+      const tDisplay = document.getElementById('timerDisplay');
+      const tStart = document.getElementById('tStart');
+      const tPause = document.getElementById('tPause');
+      const tReset = document.getElementById('tReset');
+      const tHours = document.getElementById('tHours');
+      const tMinutes = document.getElementById('tMinutes');
+      const tSeconds = document.getElementById('tSeconds');
+      const presetBtns = [...document.querySelectorAll('[data-preset]')];
+      let tTimer = null; let tLeft = 5*60; let tEndAt = 0;
+
+      function clampInt(v,min,max){ const n=Math.floor(Number(v)); if(Number.isNaN(n)) return min; return Math.min(max, Math.max(min, n)); }
+      function fmtHMS(total){ const h=Math.floor(total/3600).toString().padStart(2,'0'); const m=Math.floor((total%3600)/60).toString().padStart(2,'0'); const s=Math.floor(total%60).toString().padStart(2,'0'); return `${h}:${m}:${s}`; }
+      function updTimer(){ tDisplay.textContent = fmtHMS(tLeft); }
+
+      function startTimer(){ if(tTimer) return; if(tLeft<=0) setFromInputs(); const total=tLeft; tEndAt=Date.now()+total*1000; tick(); tTimer=setInterval(tick, 200); function tick(){ tLeft=Math.max(0, Math.round((tEndAt-Date.now())/1000)); updTimer(); if(tLeft<=0){ clearInterval(tTimer); tTimer=null; try{ new AudioContext().resume().catch(()=>{});}catch(_){} alert('Time\'s up!'); } } }
+      function pauseTimer(){ if(tTimer){ clearInterval(tTimer); tTimer=null; } }
+      function resetTimer(){ pauseTimer(); setFromInputs(); }
+      function setFromInputs(){ const h=clampInt(tHours.value,0,23), m=clampInt(tMinutes.value,0,59), s=clampInt(tSeconds.value,0,59); tLeft=h*3600+m*60+s; updTimer(); }
+      presetBtns.forEach(b=> b.addEventListener('click', ()=>{ tLeft = clampInt(b.dataset.preset,0,24*3600); updTimer(); }));
+      tStart.addEventListener('click', startTimer); tPause.addEventListener('click', pauseTimer); tReset.addEventListener('click', resetTimer);
+      tHours.addEventListener('change', setFromInputs); tMinutes.addEventListener('change', setFromInputs); tSeconds.addEventListener('change', setFromInputs);
+      updTimer();
+
+      // Stopwatch
+      const swDisplay = document.getElementById('swDisplay');
+      const swStart = document.getElementById('swStart');
+      const swLap = document.getElementById('swLap');
+      const swPause = document.getElementById('swPause');
+      const swReset = document.getElementById('swReset');
+      const laps = document.getElementById('laps');
+      let swRunning=false, swStartAt=0, swElapsed=0, swTimer=null, lastLap=0, lapCount=0;
+      function fmtMs(ms){ const h=Math.floor(ms/3600000).toString().padStart(2,'0'); const m=Math.floor(ms%3600000/60000).toString().padStart(2,'0'); const s=Math.floor(ms%60000/1000).toString().padStart(2,'0'); const cs=Math.floor(ms%1000/10).toString().padStart(2,'0'); return `${h}:${m}:${s}.${cs}`; }
+      function updSw(){ swDisplay.textContent = fmtMs(swElapsed + (swRunning ? (Date.now()-swStartAt) : 0)); }
+      function startSw(){ if(swRunning) return; swRunning=true; swStartAt=Date.now(); swTimer=setInterval(updSw, 31); }
+      function pauseSw(){ if(!swRunning) return; swElapsed += Date.now()-swStartAt; swRunning=false; clearInterval(swTimer); updSw(); }
+      function resetSw(){ pauseSw(); swElapsed=0; lastLap=0; lapCount=0; laps.innerHTML=''; updSw(); }
+      function lapSw(){ const now = swElapsed + (swRunning ? (Date.now()-swStartAt) : 0); const lap = now - lastLap; lastLap = now; const div=document.createElement('div'); div.className='lap'; div.textContent = `Lap ${++lapCount}: ${fmtMs(lap)} (Total ${fmtMs(now)})`; laps.prepend(div); }
+      swStart.addEventListener('click', startSw); swPause.addEventListener('click', pauseSw); swReset.addEventListener('click', resetSw); swLap.addEventListener('click', lapSw);
+      updSw();
+    })();
+  </script>
+</body>
+</html>

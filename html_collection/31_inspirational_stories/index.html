@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inspirational Stories</title>
+  <style>
+    :root{ --bg:#0b1022; --panel:#0f172a; --text:#e5e7eb; --muted:#94a3b8 }
+    *{ box-sizing:border-box }
+    body{ margin:0; min-height:100vh; display:grid; grid-template-columns: 320px 1fr; gap:0; background:radial-gradient(900px 600px at 15% 0%, #111827, #0b1022 60%, #050814); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial }
+    .sidebar{ padding:12px; border-right:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03) }
+    .search{ width:100%; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:var(--text) }
+    .list{ margin-top:10px; display:grid; gap:8px; max-height:calc(100vh - 70px); overflow:auto }
+    .item{ padding:10px; background:var(--panel); border:1px solid rgba(255,255,255,.08); border-radius:12px; cursor:pointer }
+    .viewer{ padding:18px }
+    .title{ font-weight:800; font-size:24px }
+    .muted{ color:var(--muted) }
+    .actions{ display:flex; gap:8px; margin-top:10px }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); cursor:pointer; font-weight:600 }
+    .fav{ color:#fde68a; margin-left:6px }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <input id="search" class="search" placeholder="Search stories..." />
+    <div class="actions" style="margin-top:8px">
+      <button id="showAll" class="btn">All</button>
+      <button id="showFav" class="btn">Favorites</button>
+    </div>
+    <div id="list" class="list"></div>
+  </div>
+  <div class="viewer">
+    <div id="vTitle" class="title">Welcome</div>
+    <div id="vAuthor" class="muted">—</div>
+    <div id="vBody" style="margin-top:12px; line-height:1.7"></div>
+    <div class="actions">
+      <button id="prev" class="btn">Prev</button>
+      <button id="next" class="btn">Next</button>
+      <button id="favBtn" class="btn">Favorite <span id="favIcon" class="fav">☆</span></button>
+      <button id="copyBtn" class="btn">Copy</button>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const stories = [
+        {title:'The Bamboo Tree', author:'Unknown', body:'For five years there is no sign of growth. Then in the fifth year, it breaks through... It was growing underground, developing a root system for stability.'},
+        {title:'Stonecutter', author:'Chinese Folktale', body:'A stonecutter wishes to be powerful—sun, cloud, mountain—only to find being himself was best. Contentment brings strength.'},
+        {title:'Starfish Story', author:'Adapted from Loren Eiseley', body:'A child throws starfish back into the sea. “You can’t save them all,” says a man. “I made a difference to that one,” replies the child.'},
+        {title:'The Two Wolves', author:'Cherokee', body:'Inside us are two wolves—one evil and one good. The one that wins is the one you feed.'},
+        {title:'The Elephant Rope', author:'Unknown', body:'Tied with a small rope, elephants don’t break free because they believe they can’t. Limiting beliefs can hold great strength back.'},
+        {title:'Carrots, Eggs, and Coffee', author:'Unknown', body:'Boiling water softens carrots, hardens eggs, and makes coffee aromatic. The same adversity affects us differently—choose your response.'}
+      ];
+      const list=document.getElementById('list');
+      const search=document.getElementById('search');
+      const showAll=document.getElementById('showAll');
+      const showFav=document.getElementById('showFav');
+      const vTitle=document.getElementById('vTitle');
+      const vAuthor=document.getElementById('vAuthor');
+      const vBody=document.getElementById('vBody');
+      const prev=document.getElementById('prev');
+      const next=document.getElementById('next');
+      const favBtn=document.getElementById('favBtn');
+      const favIcon=document.getElementById('favIcon');
+      const copyBtn=document.getElementById('copyBtn');
+
+      const storageKey='inspirational-stories-fav-v1';
+      let mode='all';
+      let favs=load();
+      let index=0; // index within filtered list
+
+      function load(){ try{ return JSON.parse(localStorage.getItem(storageKey))||[] }catch(_){ return [] } }
+      function save(){ localStorage.setItem(storageKey, JSON.stringify(favs)); }
+
+      function filtered(){ const q=search.value.toLowerCase(); const arr=stories.map((s,i)=> ({...s, idx:i})).filter(s=> s.title.toLowerCase().includes(q) || s.body.toLowerCase().includes(q) || s.author.toLowerCase().includes(q)); if(mode==='fav'){ return arr.filter(s=> favs.includes(s.idx)); } return arr; }
+
+      function renderList(){ const arr=filtered(); list.innerHTML=''; arr.forEach((s,k)=>{ const div=document.createElement('div'); div.className='item'; div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center"><div><strong>${s.title}</strong><div class=\"muted\">${s.author}</div></div><div class=\"fav\">${favs.includes(s.idx)?'★':'☆'}</div></div>`; div.addEventListener('click', ()=>{ index=k; showCurrent(); }); list.appendChild(div); }); if(index>=arr.length) index=Math.max(0, arr.length-1); }
+
+      function showCurrent(){ const arr=filtered(); if(arr.length===0){ vTitle.textContent='No stories'; vAuthor.textContent='—'; vBody.textContent=''; return; } const s=arr[index]; vTitle.textContent=s.title; vAuthor.textContent='— '+s.author; vBody.textContent=s.body; favIcon.textContent = favs.includes(s.idx)?'★':'☆'; }
+
+      function toggleFav(){ const arr=filtered(); if(arr.length===0) return; const s=arr[index]; const pos=favs.indexOf(s.idx); if(pos===-1) favs.unshift(s.idx); else favs.splice(pos,1); save(); renderList(); showCurrent(); }
+
+      function copy(){ const t=`${vTitle.textContent} ${vAuthor.textContent}\n\n${vBody.textContent}`; navigator.clipboard.writeText(t).catch(()=>{}); }
+
+      search.addEventListener('input', ()=>{ renderList(); showCurrent(); });
+      showAll.addEventListener('click', ()=>{ mode='all'; renderList(); showCurrent(); });
+      showFav.addEventListener('click', ()=>{ mode='fav'; renderList(); showCurrent(); });
+      prev.addEventListener('click', ()=>{ const arr=filtered(); if(arr.length===0) return; index=(index-1+arr.length)%arr.length; showCurrent(); });
+      next.addEventListener('click', ()=>{ const arr=filtered(); if(arr.length===0) return; index=(index+1)%arr.length; showCurrent(); });
+      favBtn.addEventListener('click', toggleFav);
+      copyBtn.addEventListener('click', copy);
+
+      renderList(); showCurrent();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes Lite</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: #252526;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            max-width: 600px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        h1 {
+            color: #569cd6;
+            text-align: center;
+            margin: 0;
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            background: #2d2d2d;
+            border: 1px solid #569cd6;
+            border-radius: 5px;
+            color: #d4d4d4;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px;
+            background: #007acc;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #005f99;
+        }
+        .notes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .note {
+            background: #2d2d2d;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .note-content {
+            color: #4ec9b0;
+            font-size: 16px;
+            word-break: break-word;
+        }
+        .note-timestamp {
+            color: #858585;
+            font-size: 12px;
+        }
+        .note-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .note-actions button {
+            font-size: 14px;
+            padding: 5px 10px;
+        }
+        .edit-input {
+            width: 100%;
+            padding: 5px;
+            background: #3c3c3c;
+            border: 1px solid #569cd6;
+            color: #d4d4d4;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            input[type="text"], .edit-input {
+                font-size: 14px;
+            }
+            .note-content {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Notes Lite</h1>
+        <div class="input-area">
+            <input type="text" id="noteInput" placeholder="Write a note...">
+            <button onclick="addNote()">Add</button>
+        </div>
+        <div class="notes-list" id="notesList"></div>
+    </div>
+
+    <script>
+        let notes = JSON.parse(localStorage.getItem('notes')) || [];
+
+        function saveNotes() {
+            localStorage.setItem('notes', JSON.stringify(notes));
+        }
+
+        function renderNotes() {
+            const notesList = document.getElementById('notesList');
+            notesList.innerHTML = '';
+            notes.forEach((note, index) => {
+                const noteDiv = document.createElement('div');
+                noteDiv.className = 'note';
+                noteDiv.innerHTML = note.isEditing ? `
+                    <input type="text" class="edit-input" value="${note.content}" id="editInput-${index}">
+                    <div class="note-actions">
+                        <button onclick="saveEdit(${index})">Save</button>
+                        <button onclick="cancelEdit(${index})">Cancel</button>
+                    </div>
+                ` : `
+                    <div class="note-content">${note.content}</div>
+                    <div class="note-timestamp">${new Date(note.timestamp).toLocaleString()}</div>
+                    <div class="note-actions">
+                        <button onclick="editNote(${index})">Edit</button>
+                        <button onclick="deleteNote(${index})">Delete</button>
+                    </div>
+                `;
+                notesList.appendChild(noteDiv);
+            });
+        }
+
+        function addNote() {
+            const noteInput = document.getElementById('noteInput');
+            const content = noteInput.value.trim();
+            if (content) {
+                notes.push({
+                    content,
+                    timestamp: new Date().toISOString(),
+                    isEditing: false
+                });
+                noteInput.value = '';
+                saveNotes();
+                renderNotes();
+            }
+        }
+
+        function editNote(index) {
+            notes[index].isEditing = true;
+            saveNotes();
+            renderNotes();
+        }
+
+        function saveEdit(index) {
+            const editInput = document.getElementById(`editInput-${index}`);
+            const newContent = editInput.value.trim();
+            if (newContent) {
+                notes[index].content = newContent;
+                notes[index].timestamp = new Date().toISOString();
+                notes[index].isEditing = false;
+                saveNotes();
+                renderNotes();
+            }
+        }
+
+        function cancelEdit(index) {
+            notes[index].isEditing = false;
+            renderNotes();
+        }
+
+        function deleteNote(index) {
+            notes.splice(index, 1);
+            saveNotes();
+            renderNotes();
+        }
+
+        // Handle Enter key to add note
+        document.getElementById('noteInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addNote();
+            }
+        });
+
+        // Initialize notes
+        renderNotes();
+    </script>
+</body>
+</html>

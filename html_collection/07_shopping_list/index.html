@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shopping List</title>
+  <style>
+    :root { --bg:#0b1022; --panel:#111827; --text:#e5e7eb; --muted:#9ca3af; --accent:#22c55e; --danger:#ef4444; }
+    *{ box-sizing:border-box }
+    body{ margin:0; min-height:100vh; display:grid; place-items:center; background:radial-gradient(900px 600px at 15% 0%, #111827, #0b1022 60%, #050814); color:var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial; }
+    .app{ width:min(720px,92vw); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:22px; box-shadow:0 10px 40px rgba(0,0,0,.5); }
+    h1{ margin:0 0 8px 0; font-size:28px }
+    .subtitle{ color:var(--muted); margin-bottom:16px }
+
+    .row{ display:flex; gap:10px; }
+    .input{ flex:1; padding:12px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.04); color:var(--text); font-size:14px }
+    .btn{ padding:12px 16px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(34,197,94,.15); color:var(--text); cursor:pointer; font-weight:600; letter-spacing:.3px }
+    .btn:hover{ background:rgba(34,197,94,.25) }
+
+    .filters{ display:flex; gap:8px; margin:14px 0 }
+    .chip{ padding:8px 12px; border-radius:999px; border:1px solid rgba(255,255,255,.1); color:var(--muted); cursor:pointer; background:rgba(255,255,255,.05) }
+    .chip.active{ color:var(--text); background:rgba(255,255,255,.12) }
+
+    ul{ list-style:none; margin:0; padding:0; }
+    .item{ display:grid; grid-template-columns: auto 1fr auto auto; align-items:center; gap:10px; padding:12px; margin-top:10px; border-radius:12px; background:var(--panel); border:1px solid rgba(255,255,255,.08) }
+    .check{ width:18px; height:18px; border-radius:4px; border:2px solid rgba(255,255,255,.3); display:grid; place-items:center; cursor:pointer }
+    .check.done{ background:var(--accent); border-color:var(--accent) }
+    .name{ font-weight:600; letter-spacing:.2px }
+    .qty{ color:var(--muted); font-size:13px }
+    .cat{ color:#93c5fd; font-size:12px; background:rgba(59,130,246,.15); padding:4px 8px; border-radius:999px }
+    .remove{ color:var(--danger); border:1px solid rgba(239,68,68,.4); background:rgba(239,68,68,.08) }
+
+    .footer{ display:flex; justify-content:space-between; align-items:center; color:var(--muted); margin-top:12px }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Shopping List</h1>
+    <div class="subtitle">Add items, set quantity and category, and mark them as bought.</div>
+
+    <div class="row">
+      <input id="itemInput" class="input" placeholder="Item name (e.g., Milk)" />
+      <input id="qtyInput" class="input" style="max-width:140px" placeholder="Qty (e.g., 2)" />
+      <input id="catInput" class="input" style="max-width:160px" placeholder="Category (e.g., Dairy)" />
+      <button id="addBtn" class="btn">Add</button>
+    </div>
+
+    <div class="filters">
+      <div class="chip active" data-filter="all">All</div>
+      <div class="chip" data-filter="pending">Pending</div>
+      <div class="chip" data-filter="done">Bought</div>
+    </div>
+
+    <ul id="list"></ul>
+
+    <div class="footer">
+      <div id="stats">0 items • 0 pending</div>
+      <button id="clearBtn" class="btn remove">Clear bought</button>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const itemInput = document.getElementById('itemInput');
+      const qtyInput = document.getElementById('qtyInput');
+      const catInput = document.getElementById('catInput');
+      const addBtn = document.getElementById('addBtn');
+      const listEl = document.getElementById('list');
+      const statsEl = document.getElementById('stats');
+      const clearBtn = document.getElementById('clearBtn');
+      const chips = [...document.querySelectorAll('.chip')];
+
+      const storageKey = 'shopping-list-v1';
+      let items = load();
+      let filter = 'all';
+
+      function load(){ try { return JSON.parse(localStorage.getItem(storageKey)) || []; } catch(e){ return []; } }
+      function save(){ localStorage.setItem(storageKey, JSON.stringify(items)); }
+
+      function addItem(name, qty, cat){
+        const item = {
+          id: Date.now().toString(36)+Math.random().toString(36).slice(2,8),
+          name: name.trim(),
+          qty: qty.trim(),
+          cat: cat.trim(),
+          done: false
+        };
+        items.unshift(item); save(); render();
+      }
+
+      function toggleDone(id){ const it = items.find(i=>i.id===id); if(it){ it.done = !it.done; save(); render(); } }
+      function removeItem(id){ items = items.filter(i=>i.id!==id); save(); render(); }
+      function clearBought(){ items = items.filter(i=>!i.done); save(); render(); }
+
+      function setFilter(f){ filter=f; chips.forEach(c=>c.classList.toggle('active', c.dataset.filter===f)); render(); }
+
+      function filtered(){ if(filter==='pending') return items.filter(i=>!i.done); if(filter==='done') return items.filter(i=>i.done); return items; }
+
+      function render(){
+        const arr = filtered();
+        listEl.innerHTML = '';
+        for(const it of arr){
+          const li = document.createElement('li'); li.className = 'item';
+          const check = document.createElement('div'); check.className = 'check' + (it.done ? ' done':'' ); check.title = it.done?'Bought':'Pending';
+          check.addEventListener('click', ()=> toggleDone(it.id));
+
+          const info = document.createElement('div');
+          const name = document.createElement('div'); name.className='name'; name.textContent = it.name || '(Unnamed)';
+          const meta = document.createElement('div'); meta.className='qty'; meta.textContent = (it.qty?('Qty: '+it.qty):'') + (it.cat? (it.qty? ' • ':'') + it.cat : '');
+          info.appendChild(name); info.appendChild(meta);
+
+          const badge = document.createElement('div'); badge.className = 'cat'; badge.textContent = it.cat || 'General';
+          const del = document.createElement('button'); del.className = 'btn remove'; del.textContent = 'Remove'; del.addEventListener('click', ()=> removeItem(it.id));
+
+          li.appendChild(check); li.appendChild(info); li.appendChild(badge); li.appendChild(del);
+          listEl.appendChild(li);
+        }
+        const pending = items.filter(i=>!i.done).length;
+        statsEl.textContent = `${items.length} items • ${pending} pending`;
+      }
+
+      function handleAdd(){
+        const name = itemInput.value; const qty = qtyInput.value || '1'; const cat = catInput.value || 'General';
+        if(name.trim().length===0) { itemInput.focus(); return; }
+        addItem(name, qty, cat);
+        itemInput.value=''; qtyInput.value=''; catInput.value=''; itemInput.focus();
+      }
+
+      addBtn.addEventListener('click', handleAdd);
+      itemInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ handleAdd(); }});
+      qtyInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ handleAdd(); }});
+      catInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ handleAdd(); }});
+      clearBtn.addEventListener('click', clearBought);
+      chips.forEach(c=> c.addEventListener('click', ()=> setFilter(c.dataset.filter)));
+
+      render();
+    })();
+  </script>
+</body>
+</html>

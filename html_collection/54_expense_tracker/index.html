@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Expense Tracker</title>
+  <style>
+    :root{ --bg:#0b1022; --panel:#0f172a; --text:#e5e7eb; --muted:#94a3b8; --ok:#22c55e; --bad:#ef4444; --accent:#38bdf8 }
+    *{ box-sizing:border-box }
+    body{ margin:0; min-height:100vh; display:grid; place-items:center; background:radial-gradient(900px 600px at 15% 0%, #111827, #0b1022 60%, #050814); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial }
+    .app{ width:min(980px,94vw); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:18px; box-shadow:0 10px 40px rgba(0,0,0,.5) }
+    h1{ margin:0 0 8px 0; font-size:28px }
+    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px }
+    .panel{ background:var(--panel); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:16px }
+    .row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:6px 0 }
+    .input{ padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:var(--text) }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); cursor:pointer; font-weight:600 }
+    .summary{ display:grid; grid-template-columns: repeat(3,1fr); gap:10px }
+    .tile{ background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:12px }
+    .muted{ color:var(--muted) }
+    .list{ max-height:420px; overflow:auto; margin-top:10px }
+    .item{ display:grid; grid-template-columns: 1fr auto auto auto; gap:8px; align-items:center; padding:10px; border-bottom:1px dashed rgba(255,255,255,.1) }
+    .pos{ color:var(--ok) }
+    .neg{ color:var(--bad) }
+    .badge{ padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); font-size:12px }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Expense Tracker</h1>
+
+    <div class="grid">
+      <div class="panel">
+        <div class="row">
+          <select id="type" class="input"><option value="-1">Expense (-)</option><option value="1">Income (+)</option></select>
+          <input id="amount" class="input" type="number" step="0.01" min="0" placeholder="Amount" style="max-width:160px" />
+          <input id="desc" class="input" placeholder="Description" />
+          <input id="cat" class="input" placeholder="Category (e.g., Food)" style="max-width:160px" />
+          <input id="date" class="input" type="date" />
+          <button id="add" class="btn">Add</button>
+        </div>
+        <div class="row">
+          <select id="fMonth" class="input"></select>
+          <select id="fCat" class="input"><option value="all">All Categories</option></select>
+          <button id="export" class="btn">Export CSV</button>
+          <button id="clear" class="btn">Clear All</button>
+        </div>
+        <div class="summary" style="margin-top:8px">
+          <div class="tile"><div class="muted">Income</div><div id="sumIn" class="pos">$0.00</div></div>
+          <div class="tile"><div class="muted">Expense</div><div id="sumOut" class="neg">$0.00</div></div>
+          <div class="tile"><div class="muted">Balance</div><div id="sumBal">$0.00</div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="row"><strong>Transactions</strong></div>
+        <div id="list" class="list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const type=document.getElementById('type');
+      const amount=document.getElementById('amount');
+      const desc=document.getElementById('desc');
+      const cat=document.getElementById('cat');
+      const date=document.getElementById('date');
+      const add=document.getElementById('add');
+      const fMonth=document.getElementById('fMonth');
+      const fCat=document.getElementById('fCat');
+      const exportBtn=document.getElementById('export');
+      const clearBtn=document.getElementById('clear');
+      const list=document.getElementById('list');
+      const sumIn=document.getElementById('sumIn');
+      const sumOut=document.getElementById('sumOut');
+      const sumBal=document.getElementById('sumBal');
+
+      const key='expense-tracker-v1';
+      let tx=load();
+
+      function load(){ try{ return JSON.parse(localStorage.getItem(key))||[] }catch(_){ return [] } }
+      function save(){ localStorage.setItem(key, JSON.stringify(tx)); }
+      function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+
+      function ensureDate(){ if(!date.value){ const d=new Date(); date.value = d.toISOString().slice(0,10); } }
+      ensureDate();
+
+      function monthsRange(){ const set=new Set(tx.map(t=> t.date.slice(0,7))); const arr=[...set].sort().reverse(); return arr; }
+      function buildFilters(){ fMonth.innerHTML=''; const arr=monthsRange(); const cur=(new Date()).toISOString().slice(0,7); const opts=[cur, ...arr.filter(m=>m!==cur)]; for(const m of opts){ const o=document.createElement('option'); o.value=m; o.textContent=m; fMonth.appendChild(o); } buildCats(); }
+      function buildCats(){ const set=new Set(['all']); tx.forEach(t=> set.add(t.cat||'')); fCat.innerHTML=''; [...set].forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c||'(uncategorized)'; fCat.appendChild(o); }); }
+
+      function addTx(){ const a=Number(amount.value); if(!(a>0)) return; const t={ id:uid(), sign:Number(type.value), amount:a, desc:desc.value.trim(), cat:cat.value.trim(), date:date.value }; tx.unshift(t); save(); amount.value=''; desc.value=''; cat.value=''; ensureDate(); buildFilters(); render(); }
+      function removeTx(id){ tx=tx.filter(t=> t.id!==id); save(); buildFilters(); render(); }
+
+      function filtered(){ const month=fMonth.value; const catv=fCat.value; return tx.filter(t=> t.date.slice(0,7)===month && (catv==='all' || (t.cat||'')===catv)); }
+
+      function render(){ const arr=filtered(); list.innerHTML=''; let inc=0, exp=0; for(const t of arr){ const row=document.createElement('div'); row.className='item'; const left=document.createElement('div'); left.innerHTML = `<div>${t.desc||'(no description)'} <span class=\"badge\">${t.cat||'—'}</span></div><div class=\"muted\">${t.date}</div>`; const amt=document.createElement('div'); const val = t.sign * t.amount; if(val>=0){ inc+=val; amt.textContent = '+$'+val.toFixed(2); amt.className='pos'; } else { exp+=-val; amt.textContent = '-$'+(-val).toFixed(2); amt.className='neg'; }
+          const sign=document.createElement('div'); sign.textContent = t.sign>0?'+':'-'; sign.className = t.sign>0?'pos':'neg'; const rm=document.createElement('button'); rm.className='btn'; rm.textContent='Remove'; rm.addEventListener('click', ()=> removeTx(t.id)); row.appendChild(left); row.appendChild(amt); row.appendChild(sign); row.appendChild(rm); list.appendChild(row); }
+        sumIn.textContent = '$'+inc.toFixed(2); sumOut.textContent = '$'+exp.toFixed(2); sumBal.textContent = '$'+(inc-exp).toFixed(2); }
+
+      function exportCSV(){ const header='date,sign,amount,category,description\n'; const rows=tx.map(t=> `${t.date},${t.sign},${t.amount},"${(t.cat||'').replace(/"/g,'""')}","${(t.desc||'').replace(/"/g,'""')}"`).join('\n'); const a=document.createElement('a'); a.download='transactions.csv'; a.href = 'data:text/csv,'+encodeURIComponent(header+rows); a.click(); }
+
+      add.addEventListener('click', addTx);
+      [fMonth,fCat].forEach(el=> el.addEventListener('change', render));
+      exportBtn.addEventListener('click', exportCSV);
+      clearBtn.addEventListener('click', ()=>{ if(confirm('Clear ALL transactions?')){ tx=[]; save(); buildFilters(); render(); } });
+
+      buildFilters(); render();
+    })();
+  </script>
+</body>
+</html>

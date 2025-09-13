@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simple Drawing</title>
+  <style>
+    :root{ --bg:#0b1022; --panel:#0f172a; --text:#e5e7eb; --muted:#94a3b8; --accent:#38bdf8 }
+    *{ box-sizing:border-box }
+    body{ margin:0; min-height:100vh; display:grid; grid-template-rows:auto 1fr; background:radial-gradient(900px 600px at 15% 0%, #111827, #0b1022 60%, #050814); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial }
+    .toolbar{ display:flex; gap:8px; flex-wrap:wrap; padding:12px; background:rgba(255,255,255,.03); border-bottom:1px solid rgba(255,255,255,.08) }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); cursor:pointer; font-weight:600 }
+    .panel{ padding:10px; border:1px solid rgba(255,255,255,.08); background:var(--panel); border-radius:12px }
+    .canvasWrap{ display:grid; place-items:center; padding:12px }
+    canvas{ background:#fff; border-radius:8px; max-width:95vw; box-shadow:0 8px 40px rgba(0,0,0,.3) }
+    label{ font-size:12px; color:var(--muted) }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button id="brushBtn" class="btn">Brush</button>
+    <button id="eraserBtn" class="btn">Eraser</button>
+    <div class="panel"><label>Color</label><input id="color" type="color" value="#1e293b" /></div>
+    <div class="panel"><label>Size</label><input id="size" type="range" min="1" max="40" value="6" /></div>
+    <button id="undoBtn" class="btn">Undo</button>
+    <button id="redoBtn" class="btn">Redo</button>
+    <button id="clearBtn" class="btn">Clear</button>
+    <button id="saveBtn" class="btn">Save PNG</button>
+  </div>
+  <div class="canvasWrap">
+    <canvas id="canvas" width="1200" height="800"></canvas>
+  </div>
+
+  <script>
+    (function(){
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      let drawing=false, erasing=false, last=null;
+      let color = document.getElementById('color').value;
+      let size = parseInt(document.getElementById('size').value,10);
+      const undoStack=[], redoStack=[];
+
+      function pushState(){ undoStack.push(canvas.toDataURL()); if(undoStack.length>50) undoStack.shift(); redoStack.length=0; }
+
+      function line(a,b){ ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle = erasing ? '#ffffff' : color; ctx.lineWidth = size; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
+
+      function pos(e){ const r=canvas.getBoundingClientRect(); const x=(e.touches?e.touches[0].clientX:e.clientX)-r.left; const y=(e.touches?e.touches[0].clientY:e.clientY)-r.top; return {x,y}; }
+
+      function start(e){ pushState(); drawing=true; last=pos(e); }
+      function move(e){ if(!drawing) return; const p=pos(e); line(last,p); last=p; }
+      function end(){ drawing=false; last=null; }
+
+      canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); document.addEventListener('mouseup', end);
+      canvas.addEventListener('touchstart', e=>{ e.preventDefault(); start(e); }, {passive:false});
+      canvas.addEventListener('touchmove', e=>{ e.preventDefault(); move(e); }, {passive:false});
+      canvas.addEventListener('touchend', end);
+
+      document.getElementById('brushBtn').addEventListener('click', ()=>{ erasing=false; });
+      document.getElementById('eraserBtn').addEventListener('click', ()=>{ erasing=true; });
+      document.getElementById('color').addEventListener('input', e=>{ color = e.target.value; });
+      document.getElementById('size').addEventListener('input', e=>{ size = parseInt(e.target.value,10); });
+
+      document.getElementById('undoBtn').addEventListener('click', ()=>{
+        if(undoStack.length===0) return; const last = undoStack.pop(); redoStack.push(canvas.toDataURL()); const img=new Image(); img.onload=()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); }; img.src=last;
+      });
+      document.getElementById('redoBtn').addEventListener('click', ()=>{
+        if(redoStack.length===0) return; const shot = redoStack.pop(); undoStack.push(canvas.toDataURL()); const img=new Image(); img.onload=()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); }; img.src=shot;
+      });
+      document.getElementById('clearBtn').addEventListener('click', ()=>{ pushState(); ctx.clearRect(0,0,canvas.width,canvas.height); });
+      document.getElementById('saveBtn').addEventListener('click', ()=>{ const a=document.createElement('a'); a.download='drawing.png'; a.href=canvas.toDataURL('image/png'); a.click(); });
+    })();
+  </script>
+</body>
+</html>

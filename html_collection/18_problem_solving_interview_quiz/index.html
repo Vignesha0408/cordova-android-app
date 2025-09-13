@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Problem-Solving Interview Quiz</title>
+  <style>
+    :root{ --bg:#0b1022; --panel:#111827; --text:#e5e7eb; --muted:#9ca3af; --accent:#38bdf8; --ok:#22c55e; --bad:#ef4444 }
+    *{ box-sizing:border-box }
+    body{ margin:0; min-height:100vh; display:grid; place-items:center; background:radial-gradient(900px 600px at 15% 0%, #111827, #0b1022 60%, #050814); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial }
+    .app{ width:min(980px,95vw); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:18px; box-shadow:0 10px 40px rgba(0,0,0,.5) }
+    h1{ margin:0 0 10px 0; font-size:26px }
+    .muted{ color:var(--muted) }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); cursor:pointer; font-weight:600 }
+    .btn.primary{ background:linear-gradient(180deg,#38bdf8,#0284c7); border-color:rgba(56,189,248,.5) }
+    .btn.ok{ background:linear-gradient(180deg,#22c55e,#16a34a); border-color:rgba(34,197,94,.5) }
+    .panel{ background:var(--panel); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:14px }
+    .q{ font-weight:700; margin-bottom:8px }
+    .options{ display:grid; gap:8px }
+    .opt{ padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); cursor:pointer }
+    .opt.selected{ outline:2px solid var(--accent) }
+    .opt.correct{ background:rgba(34,197,94,.15); border-color:rgba(34,197,94,.5) }
+    .opt.wrong{ background:rgba(239,68,68,.15); border-color:rgba(239,68,68,.5) }
+    .footer{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; color:var(--muted) }
+    .review{ margin-top:14px }
+    .hide{ display:none }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Problem-Solving Interview MCQ</h1>
+    <div class="muted">30 questions • Random order • Review answers</div>
+    <div class="row" style="margin:10px 0">
+      <button id="startBtn" class="btn primary">Start Quiz</button>
+      <button id="restartBtn" class="btn" disabled>Restart</button>
+    </div>
+
+    <div id="quiz" class="panel hide">
+      <div id="counter" class="muted">1 / 30</div>
+      <div id="question" class="q">Question text</div>
+      <div id="options" class="options"></div>
+      <div class="footer">
+        <div></div>
+        <div>
+          <button id="nextBtn" class="btn" disabled>Next Question</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="result" class="panel hide"></div>
+    <div id="review" class="panel review hide"></div>
+  </div>
+
+  <script>
+    (function(){
+      const startBtn = document.getElementById('startBtn');
+      const restartBtn = document.getElementById('restartBtn');
+      const quizEl = document.getElementById('quiz');
+      const counterEl = document.getElementById('counter');
+      const questionEl = document.getElementById('question');
+      const optionsEl = document.getElementById('options');
+      const resultEl = document.getElementById('result');
+      const reviewEl = document.getElementById('review');
+      const nextBtn = document.getElementById('nextBtn');
+
+      const storageKey = 'ps-quiz-v1';
+
+      const questions = shuffle([
+        q('You need to find two numbers adding to target; best typical approach?',['Two-pointer after sort','Brute force','Backtracking','Heap'],0),
+        q('To detect a cycle in linked list use',['Floyd’s tortoise-hare','Stack only','Sorting','Hash map only'],0),
+        q('For K largest elements use',['Min-heap of size K','Sort entire array','BST','Queue'],0),
+        q('Balanced parentheses check uses',['Stack','Queue','Heap','Trie'],0),
+        q('To find shortest path with non-negative weights',['Dijkstra','Bellman-Ford','BFS always','DFS'],0),
+        q('To count islands in grid',['DFS/BFS flood fill','Dijkstra','Kruskal','Prim'],0),
+        q('Subarray sum equals k (positive numbers)',['Sliding window','Stack','Union-Find','Trie'],0),
+        q('Kruskal’s algorithm uses',['Sorting edges + DSU','Dijkstra','Bellman','Toposort'],0),
+        q('To detect duplicates quickly',['Hash set','Sorting only','Heap','BST only'],0),
+        q('Find median of two sorted arrays optimal',['Binary search on partitions','Merge fully','Heap both','Randomize'],0),
+        q('Palindrome linked list',['Reverse second half','Hash map','Heap','Trie'],0),
+        q('Max subarray sum',['Kadane’s algorithm','Divide only','Greedy only','DP with O(n^2)'],0),
+        q('Coin change min coins typical',['DP','Greedy always','Backtracking only','Sort then stack'],0),
+        q('LCA in BST',['Traverse using order','DP on tree','Heapify','KMP'],0),
+        q('Top K frequent',['Map + heap','Sort only','Stack','DFS'],0),
+        q('Search in rotated sorted array',['Binary search variants','Linear search','Hash','DP'],0),
+        q('Edit distance',['DP on matrix','Greedy','Stack','Heap'],0),
+        q('Backtracking typical for',['N-Queens','Dijkstra','Kruskal','Union-Find'],0),
+        q('Bitmask DP useful for',['TSP subsets','Heap sort','Graph BFS','Trie'],0),
+        q('Reservoir sampling used for',['Random pick stream','Sorting','Caching','DP'],0),
+        q('Monotonic queue used in',['Sliding window max','DFS','Union-Find','Kruskal'],0),
+        q('Trie compresses with',['Radix/Patricia','AVL','Heap','Stack'],0),
+        q('Rabin-Karp uses',['Rolling hash','KMP table','Suffix array','Trie only'],0),
+        q('Two-sum in unsorted',['Map complement','Sort only','Heap','Stack'],0),
+        q('Cycle detection in directed graph',['DFS with colors','BFS only','Kruskal','Union-Find only'],0),
+        q('Longest increasing subsequence O(n log n) uses',['Binary search tails','Full DP O(n^2)','Greedy + heap','Divide and conquer only'],0),
+        q('Binary indexed tree good for',['Prefix sums','Shortest path','Heap ops','String search'],0),
+        q('Segment tree supports',['Range query/update','Graph shortest path','Toposort','Hashing'],0),
+        q('To avoid TLE often',['Prune, reduce constants','Use recursion always','Use strings','Ignore constraints'],0),
+        q('Complexity priority',['Pick minimal asymptotic','Max memory','Max recursion','Most code'],0)
+      ]);
+
+      const TOTAL = 30;
+      let usedQuestions = new Set();
+      let currentQuestion = null;
+      let questionCount = 0;
+
+      function q(text, opts, correct){ return { text, opts, correct }; }
+      function shuffle(a){ const r=[...a]; for(let i=r.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]] } return r }
+
+      function start(){
+        usedQuestions.clear();
+        questionCount = 0;
+        quizEl.classList.remove('hide'); resultEl.classList.add('hide'); reviewEl.classList.add('hide');
+        restartBtn.disabled = false;
+        getRandomQuestion();
+      }
+      function getRandomQuestion(){
+        if(usedQuestions.size >= questions.length) {
+          usedQuestions.clear();
+        }
+        
+        let randomIndex;
+        do {
+          randomIndex = Math.floor(Math.random() * questions.length);
+        } while(usedQuestions.has(randomIndex));
+        
+        usedQuestions.add(randomIndex);
+        currentQuestion = questions[randomIndex];
+        questionCount++;
+        render();
+      }
+
+      function render(){
+        if(!currentQuestion) return;
+        
+        counterEl.textContent = `Question ${questionCount}`;
+        questionEl.textContent = currentQuestion.text;
+        optionsEl.innerHTML = '';
+        
+        currentQuestion.opts.forEach((opt,i)=>{
+          const div = document.createElement('div');
+          div.className = 'opt';
+          div.textContent = opt;
+          div.addEventListener('click', ()=>{ selectOption(i); });
+          optionsEl.appendChild(div);
+        });
+      }
+
+      function selectOption(selectedIndex){
+        const optionDivs = optionsEl.querySelectorAll('.opt');
+        optionDivs.forEach((div, i) => {
+          div.style.pointerEvents = 'none';
+          if(i === currentQuestion.correct) {
+            div.classList.add('correct');
+          }
+          if(i === selectedIndex && i !== currentQuestion.correct) {
+            div.classList.add('wrong');
+          }
+        });
+        
+        nextBtn.disabled = false;
+      }
+      function next(){
+        nextBtn.disabled = true;
+        getRandomQuestion();
+      }
+
+      startBtn.addEventListener('click', start);
+      restartBtn.addEventListener('click', start);
+      nextBtn.addEventListener('click', next);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Math Practice</title>
+  <style>
+    :root{ --bg:#0b1022; --panel:#0f172a; --text:#e5e7eb; --muted:#94a3b8; --accent:#38bdf8; --ok:#22c55e; --bad:#ef4444 }
+    *{ box-sizing:border-box }
+    body{ margin:0; min-height:100vh; display:grid; place-items:center; background:radial-gradient(900px 600px at 15% 0%, #111827, #0b1022 60%, #050814); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial }
+    .app{ width:min(680px,92vw); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:18px; box-shadow:0 10px 40px rgba(0,0,0,.5) }
+    h1{ margin:0 0 8px 0; font-size:28px }
+    .muted{ color:var(--muted) }
+    .panel{ background:var(--panel); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:14px; margin-top:10px }
+    .row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); cursor:pointer; font-weight:600 }
+    .btn.primary{ background:linear-gradient(180deg,#38bdf8,#0284c7); border-color:rgba(56,189,248,.5) }
+    .input{ width:100%; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:var(--text) }
+    .center{ text-align:center }
+    .q{ font-size:36px; letter-spacing:1px; margin:10px 0 }
+    .time{ font-size:22px; color:var(--muted) }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Math Practice</h1>
+    <div class="muted">Practice addition, subtraction, multiplication, division</div>
+
+    <div class="panel center">
+      <div class="time" id="clock">01:00</div>
+      <div class="q" id="question">5 + 7 = ?</div>
+      <div class="row" style="justify-content:center">
+        <input id="answer" class="input" style="max-width:160px" placeholder="Your answer" />
+        <button id="submit" class="btn primary">Submit</button>
+      </div>
+      <div class="row" style="justify-content:center; margin-top:8px">
+        <button class="btn" data-min="1">1 min</button>
+        <button class="btn" data-min="2">2 min</button>
+        <button class="btn" data-min="5">5 min</button>
+        <button id="start" class="btn">Start</button>
+        <button id="reset" class="btn">Reset</button>
+      </div>
+      <div class="muted" id="score">Score: 0 • Correct: 0 • Wrong: 0</div>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <label>Difficulty</label>
+        <select id="diff" class="input" style="max-width:160px">
+          <option value="10">Easy (0-10)</option>
+          <option value="20">Medium (0-20)</option>
+          <option value="50">Hard (0-50)</option>
+        </select>
+        <label>Operations</label>
+        <select id="ops" class="input" style="max-width:200px">
+          <option value="+ - * /">+ - * /</option>
+          <option value="+ - *">+ - *</option>
+          <option value="+ -">+ -</option>
+          <option value="* /">* /</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const question = document.getElementById('question');
+      const answer = document.getElementById('answer');
+      const submit = document.getElementById('submit');
+      const clock = document.getElementById('clock');
+      const scoreEl = document.getElementById('score');
+      const startBtn = document.getElementById('start');
+      const resetBtn = document.getElementById('reset');
+      const diff = document.getElementById('diff');
+      const opsSel = document.getElementById('ops');
+
+      let a=0,b=0,op='+',correct=0,wrong=0,score=0, target=60, left=target, timer=null, running=false;
+      function fmt(t){ const m=Math.floor(t/60).toString().padStart(2,'0'); const s=(t%60).toString().padStart(2,'0'); return `${m}:${s}`; }
+      function updClock(){ clock.textContent = fmt(left); }
+      function updScore(){ scoreEl.textContent = `Score: ${score} • Correct: ${correct} • Wrong: ${wrong}`; }
+
+      function rand(n){ return Math.floor(Math.random()* (n+1)); }
+      function pickOp(){ const arr=opsSel.value.split(' ').filter(Boolean); return arr[Math.floor(Math.random()*arr.length)]; }
+      function gen(){ const max = parseInt(diff.value,10); a = rand(max); b = rand(max); op = pickOp(); if(op==='/'){ b = Math.max(1, b); a = a - (a % b); } question.textContent = `${a} ${op} ${b} = ?`; answer.value=''; answer.focus(); }
+      function check(){ const val = Number(answer.value); let expected; switch(op){ case '+': expected=a+b; break; case '-': expected=a-b; break; case '*': expected=a*b; break; default: expected=a/b; }
+        if(val===expected){ score+=10; correct++; } else { score=Math.max(0, score-5); wrong++; }
+        updScore(); gen(); }
+
+      function start(){ if(running) return; running=true; left=target; updClock(); gen(); timer=setInterval(()=>{ left--; updClock(); if(left<=0){ clearInterval(timer); running=false; alert(`Time! Score ${score}`); } }, 1000); }
+      function reset(){ if(timer){ clearInterval(timer); } running=false; correct=0; wrong=0; score=0; left=target; updClock(); updScore(); question.textContent='Ready?'; answer.value=''; }
+
+      submit.addEventListener('click', check);
+      answer.addEventListener('keydown', e=>{ if(e.key==='Enter'){ check(); }});
+      startBtn.addEventListener('click', start);
+      resetBtn.addEventListener('click', reset);
+      document.querySelectorAll('[data-min]').forEach(b=> b.addEventListener('click', ()=>{ target=Number(b.dataset.min)*60; left=target; updClock(); }));
+
+      updClock(); updScore();
+    })();
+  </script>
+</body>
+</html>

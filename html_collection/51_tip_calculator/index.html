@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tip Calculator</title>
+  <style>
+    :root{ --bg:#0b1022; --panel:#0f172a; --text:#e5e7eb; --muted:#94a3b8; --accent:#38bdf8 }
+    *{ box-sizing:border-box }
+    body{ margin:0; min-height:100vh; display:grid; place-items:center; background:radial-gradient(900px 600px at 15% 0%, #111827, #0b1022 60%, #050814); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial }
+    .app{ width:min(720px,92vw); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:18px; box-shadow:0 10px 40px rgba(0,0,0,.5) }
+    h1{ margin:0 0 8px 0; font-size:28px }
+    .panel{ background:var(--panel); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:16px; margin-top:10px }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:6px 0 }
+    .input{ padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:var(--text) }
+    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px }
+    .result{ font-size:22px }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); cursor:pointer; font-weight:600 }
+    .muted{ color:var(--muted) }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Tip Calculator</h1>
+
+    <div class="panel">
+      <div class="row">
+        <label>Bill</label>
+        <input id="bill" class="input" type="number" min="0" step="0.01" value="100" style="max-width:140px" />
+        <label>Tip %</label>
+        <input id="tip" class="input" type="number" min="0" step="0.1" value="10" style="max-width:120px" />
+        <label>Split</label>
+        <input id="split" class="input" type="number" min="1" step="1" value="1" style="max-width:120px" />
+        <label><input id="round" type="checkbox" /> Round per person</label>
+        <button id="copy" class="btn">Copy</button>
+      </div>
+      <div class="grid">
+        <div>
+          <div class="muted">Tip amount</div>
+          <div id="tipAmount" class="result">$10.00</div>
+        </div>
+        <div>
+          <div class="muted">Total</div>
+          <div id="total" class="result">$110.00</div>
+        </div>
+        <div>
+          <div class="muted">Per person</div>
+          <div id="perPerson" class="result">$110.00</div>
+        </div>
+        <div>
+          <div class="muted">Per person tip</div>
+          <div id="perTip" class="result">$10.00</div>
+        </div>
+      </div>
+      <div class="muted" style="margin-top:6px" id="note"></div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const bill=document.getElementById('bill');
+      const tip=document.getElementById('tip');
+      const split=document.getElementById('split');
+      const round=document.getElementById('round');
+      const tipAmount=document.getElementById('tipAmount');
+      const total=document.getElementById('total');
+      const perPerson=document.getElementById('perPerson');
+      const perTip=document.getElementById('perTip');
+      const note=document.getElementById('note');
+      const copyBtn=document.getElementById('copy');
+
+      function calc(){
+        const b = Math.max(0, Number(bill.value)||0);
+        const t = Math.max(0, Number(tip.value)||0)/100;
+        const s = Math.max(1, Math.floor(Number(split.value)||1));
+        const tipAmt = b * t;
+        const tot = b + tipAmt;
+        let per = tot / s;
+        let perT = tipAmt / s;
+        let rounded='';
+        if(round.checked){
+          const oldPer = per; const oldTip = perT;
+          per = Math.ceil(per*100)/100; // round up to cents
+          perT = Math.max(0, per - (b/s));
+          rounded = `Rounded per person from $${oldPer.toFixed(2)} to $${per.toFixed(2)}`;
+        }
+        tipAmount.textContent = `$${tipAmt.toFixed(2)}`;
+        total.textContent = `$${tot.toFixed(2)}`;
+        perPerson.textContent = `$${per.toFixed(2)}`;
+        perTip.textContent = `$${perT.toFixed(2)}`;
+        note.textContent = rounded;
+      }
+
+      [bill, tip, split, round].forEach(el=> el.addEventListener('input', calc));
+      copyBtn.addEventListener('click', ()=>{
+        const text = `Bill: $${Number(bill.value||0).toFixed(2)}\nTip %: ${Number(tip.value||0).toFixed(1)}\nSplit: ${Math.max(1, Math.floor(Number(split.value)||1))}\nTip: ${tipAmount.textContent}\nTotal: ${total.textContent}\nPer person: ${perPerson.textContent}`;
+        navigator.clipboard.writeText(text).catch(()=>{});
+      });
+
+      calc();
+    })();
+  </script>
+</body>
+</html>

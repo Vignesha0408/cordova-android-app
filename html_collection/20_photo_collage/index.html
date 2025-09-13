@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Photo Collage</title>
+  <style>
+    :root{ --bg:#0b1022; --panel:#111827; --text:#e5e7eb; --muted:#9ca3af; --accent:#38bdf8 }
+    *{ box-sizing:border-box }
+    body{ margin:0; min-height:100vh; display:grid; grid-template-rows:auto 1fr; background:radial-gradient(900px 600px at 15% 0%, #111827, #0b1022 60%, #050814); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial }
+    .toolbar{ display:flex; gap:8px; flex-wrap:wrap; padding:12px; background:rgba(255,255,255,.03); border-bottom:1px solid rgba(255,255,255,.08) }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); cursor:pointer; font-weight:600 }
+    .panel{ padding:12px; border:1px solid rgba(255,255,255,.08); background:var(--panel); border-radius:12px }
+    .input{ padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:var(--text) }
+    .stageWrap{ display:grid; place-items:center; padding:12px }
+    canvas{ background:#fff; border-radius:10px; max-width:95vw; box-shadow:0 8px 40px rgba(0,0,0,.35) }
+    .drop{ border:2px dashed rgba(255,255,255,.2); border-radius:12px; padding:16px; text-align:center; color:var(--muted) }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <input id="file" class="input" type="file" accept="image/*" multiple />
+    <div class="panel">Rows <input id="rows" type="number" class="input" style="width:80px" min="1" max="10" value="2" /></div>
+    <div class="panel">Cols <input id="cols" type="number" class="input" style="width:80px" min="1" max="10" value="2" /></div>
+    <div class="panel">Gap <input id="gap" type="number" class="input" style="width:80px" min="0" max="50" value="8" /></div>
+    <div class="panel">BG <input id="bg" type="color" class="input" value="#ffffff" /></div>
+    <button id="download" class="btn">Download PNG</button>
+  </div>
+
+  <div class="stageWrap">
+    <div id="drop" class="drop" style="max-width:95vw">Drop images here or use the file picker above</div>
+    <canvas id="canvas" width="1200" height="1200" hidden></canvas>
+  </div>
+
+  <script>
+    (function(){
+      const file = document.getElementById('file');
+      const rows = document.getElementById('rows');
+      const cols = document.getElementById('cols');
+      const gap = document.getElementById('gap');
+      const bg = document.getElementById('bg');
+      const download = document.getElementById('download');
+      const drop = document.getElementById('drop');
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      let images = [];
+
+      function handleFiles(files){
+        const arr = Array.from(files).slice(0, 100);
+        if(arr.length===0) return;
+        const loaders = arr.map(f=> new Promise(res=>{ const img=new Image(); img.onload=()=>res(img); img.src=URL.createObjectURL(f); }));
+        Promise.all(loaders).then(imgs=>{ images = imgs; render(); });
+      }
+
+      file.addEventListener('change', e=> handleFiles(e.target.files));
+      drop.addEventListener('dragover', e=>{ e.preventDefault(); drop.style.background='rgba(255,255,255,.05)'; });
+      drop.addEventListener('dragleave', ()=>{ drop.style.background=''; });
+      drop.addEventListener('drop', e=>{ e.preventDefault(); drop.style.background=''; handleFiles(e.dataTransfer.files); });
+
+      function render(){
+        if(images.length===0) return; canvas.hidden=false; drop.hidden=true;
+        const r = Math.max(1, Math.floor(Number(rows.value)||2));
+        const c = Math.max(1, Math.floor(Number(cols.value)||2));
+        const g = Math.max(0, Math.floor(Number(gap.value)||0));
+        const W = canvas.width, H = canvas.height;
+        ctx.fillStyle = bg.value || '#ffffff'; ctx.fillRect(0,0,W,H);
+        const cellW = Math.floor((W - (c+1)*g) / c);
+        const cellH = Math.floor((H - (r+1)*g) / r);
+        for(let i=0;i<r;i++){
+          for(let j=0;j<c;j++){
+            const idx = i*c + j; if(idx >= images.length) break;
+            const img = images[idx];
+            const {dw, dh, dx, dy} = fitCover(img.width, img.height, cellW, cellH);
+            const x = g + j*(cellW+g) + dx; const y = g + i*(cellH+g) + dy;
+            ctx.drawImage(img, x, y, dw, dh);
+          }
+        }
+      }
+
+      function fitCover(iw, ih, cw, ch){
+        const ir=iw/ih, cr=cw/ch; let dw, dh; if(ir>cr){ dh=ch; dw=ch*ir; } else { dw=cw; dh=cw/ir; } const dx=(cw-dw)/2; const dy=(ch-dh)/2; return {dw,dh,dx,dy};
+      }
+
+      rows.addEventListener('change', render); cols.addEventListener('change', render); gap.addEventListener('change', render); bg.addEventListener('change', render);
+      download.addEventListener('click', ()=>{ const a=document.createElement('a'); a.download='collage.png'; a.href=canvas.toDataURL('image/png'); a.click(); });
+    })();
+  </script>
+</body>
+</html>

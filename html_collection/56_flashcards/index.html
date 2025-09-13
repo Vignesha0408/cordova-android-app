@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flashcards</title>
+  <style>
+    :root{ --bg:#07101e; --panel:#0b1327; --muted:#94a3b8; --text:#e5e7eb; --accent:#34d399; --warn:#fbbf24; --bad:#f87171 }
+    *{ box-sizing:border-box }
+    body{ margin:0; min-height:100vh; display:grid; place-items:center; background:radial-gradient(800px 500px at 10% 0%, #0c1733, #07101e 60%, #050814); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial }
+    .app{ width:min(980px,94vw); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:18px; box-shadow:0 10px 40px rgba(0,0,0,.5) }
+    h1{ margin:0 0 10px; font-size:28px }
+    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px }
+    .panel{ background:var(--panel); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:14px }
+    .row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:6px 0 }
+    .input{ padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:var(--text) }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); cursor:pointer; font-weight:600 }
+    .muted{ color:var(--muted) }
+    .list{ max-height:440px; overflow:auto; margin-top:8px }
+    .item{ display:grid; grid-template-columns: 1fr auto auto; gap:8px; align-items:center; padding:10px; border-bottom:1px dashed rgba(255,255,255,.1) }
+    .card{ height:220px; border-radius:16px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); display:grid; place-items:center; padding:16px; font-size:20px; text-align:center; cursor:pointer; user-select:none }
+    .progress{ height:8px; background:rgba(255,255,255,.1); border-radius:999px; overflow:hidden }
+    .bar{ height:100%; width:0%; background:linear-gradient(90deg, var(--accent), #60a5fa) }
+    .tag{ padding:2px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); font-size:12px; margin-left:6px }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Flashcards</h1>
+
+    <div class="grid">
+      <div class="panel">
+        <div class="row">
+          <input id="front" class="input" placeholder="Front" style="flex:1; min-width:180px" />
+          <input id="back" class="input" placeholder="Back" style="flex:1; min-width:180px" />
+          <input id="tags" class="input" placeholder="tags: js,react" style="min-width:140px" />
+          <button id="add" class="btn">Add</button>
+        </div>
+        <div class="row">
+          <input id="search" class="input" placeholder="Search front/back/tag" style="flex:1" />
+          <select id="fTag" class="input"><option value="all">All tags</option></select>
+          <button id="shuffle" class="btn">Shuffle</button>
+          <button id="export" class="btn">Export JSON</button>
+          <input id="importFile" type="file" accept="application/json" style="display:none" />
+          <button id="importBtn" class="btn">Import</button>
+        </div>
+        <div class="row">
+          <div class="progress" style="flex:1"><div id="bar" class="bar"></div></div>
+          <span id="progText" class="muted">0/0</span>
+        </div>
+        <div id="studyCard" class="card">No cards yet</div>
+        <div class="row" style="justify-content:center">
+          <button id="again" class="btn">Again</button>
+          <button id="good" class="btn">Good</button>
+          <button id="easy" class="btn">Easy</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="row"><strong>All Cards</strong></div>
+        <div id="list" class="list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const front=document.getElementById('front');
+      const back=document.getElementById('back');
+      const tags=document.getElementById('tags');
+      const add=document.getElementById('add');
+      const search=document.getElementById('search');
+      const fTag=document.getElementById('fTag');
+      const shuffleBtn=document.getElementById('shuffle');
+      const exportBtn=document.getElementById('export');
+      const importFile=document.getElementById('importFile');
+      const importBtn=document.getElementById('importBtn');
+      const list=document.getElementById('list');
+      const studyCard=document.getElementById('studyCard');
+      const again=document.getElementById('again');
+      const good=document.getElementById('good');
+      const easy=document.getElementById('easy');
+      const bar=document.getElementById('bar');
+      const progText=document.getElementById('progText');
+
+      const key='flashcards-v1';
+      let cards=load();
+      let queue=[]; let current=null; let showingFront=true;
+
+      function load(){ try{ return JSON.parse(localStorage.getItem(key))||[] }catch(_){ return [] } }
+      function save(){ localStorage.setItem(key, JSON.stringify(cards)); }
+      function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+      function parseTags(s){ return (s||'').split(',').map(t=>t.trim()).filter(Boolean); }
+
+      function allTags(){ const set=new Set(); cards.forEach(c=> c.tags.forEach(t=> set.add(t))); return ['all', ...[...set].sort()]; }
+      function buildTagFilter(){ fTag.innerHTML=''; allTags().forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; fTag.appendChild(o); }); }
+
+      function addCard(){ const f=front.value.trim(); const b=back.value.trim(); if(!f||!b) return; const c={ id:uid(), front:f, back:b, tags:parseTags(tags.value), ease:2500, due:Date.now(), lapses:0, reps:0 }; cards.push(c); save(); front.value=''; back.value=''; tags.value=''; render(); buildQueue(); }
+      function removeCard(id){ cards=cards.filter(c=> c.id!==id); save(); render(); buildQueue(); }
+      function editCard(id){ const c=cards.find(x=>x.id===id); if(!c) return; const nf=prompt('Edit front', c.front); if(nf===null) return; const nb=prompt('Edit back', c.back); if(nb===null) return; const nt=prompt('Edit tags (comma separated)', c.tags.join(', ')); c.front=nf.trim()||c.front; c.back=nb.trim()||c.back; c.tags=parseTags(nt); save(); render(); buildQueue(); }
+
+      function matchesFilters(c){ const q=search.value.trim().toLowerCase(); if(q && !(c.front.toLowerCase().includes(q)||c.back.toLowerCase().includes(q)||c.tags.some(t=>t.toLowerCase().includes(q)))) return false; if(fTag.value!=='all' && !c.tags.includes(fTag.value)) return false; return true; }
+
+      function render(){ buildTagFilter(); list.innerHTML=''; const arr=cards.filter(matchesFilters).sort((a,b)=> a.front.localeCompare(b.front)); for(const c of arr){ const row=document.createElement('div'); row.className='item'; const main=document.createElement('div'); main.innerHTML=`<div><strong>${c.front}</strong> <span class=\"tag\">${c.tags.join('</span> <span class=\\"tag\\"'>')}</span></div><div class=\"muted\">Ease: ${c.ease}ms • Due: ${new Date(c.due).toLocaleString()}</div>`; const act=document.createElement('div'); const e=document.createElement('button'); e.className='btn'; e.textContent='Edit'; e.addEventListener('click', ()=> editCard(c.id)); const r=document.createElement('button'); r.className='btn'; r.textContent='Remove'; r.addEventListener('click', ()=> removeCard(c.id)); row.append(main, e, r); list.appendChild(row); }
+      }
+
+      function buildQueue(){ const now=Date.now(); queue = cards.filter(c=> c.due<=now && matchesFilters(c)); if(queue.length===0){ // show next upcoming if any
+          const upcoming = cards.filter(matchesFilters).sort((a,b)=> a.due-b.due)[0]; current = upcoming||null; } else { current = queue[0]; }
+        showingFront=true; updateStudyCard(); updateProgress(); }
+
+      function updateProgress(){ const total=cards.filter(matchesFilters).length||0; const due=cards.filter(c=> c.due<=Date.now() && matchesFilters(c)).length; const done=Math.min(total, total-due); const pct= total? Math.round(done/total*100) : 0; bar.style.width=pct+'%'; progText.textContent=`${done}/${total}`; }
+
+      function updateStudyCard(){ if(!current){ studyCard.textContent='No cards yet'; return; } studyCard.innerHTML = showingFront? current.front : current.back; }
+      studyCard.addEventListener('click', ()=>{ showingFront=!showingFront; updateStudyCard(); });
+
+      function scheduleAgain(c){ c.ease=Math.max(1000, Math.round(c.ease*0.7)); c.due=Date.now()+c.ease; c.lapses+=1; c.reps+=1; }
+      function scheduleGood(c){ c.ease=Math.min(8*60*60*1000, Math.round(c.ease*1.8)); c.due=Date.now()+c.ease; c.reps+=1; }
+      function scheduleEasy(c){ c.ease=Math.min(24*60*60*1000, Math.round(c.ease*2.5)); c.due=Date.now()+c.ease; c.reps+=1; }
+
+      function rate(kind){ if(!current) return; if(kind==='again') scheduleAgain(current); if(kind==='good') scheduleGood(current); if(kind==='easy') scheduleEasy(current); save(); buildQueue(); }
+
+      again.addEventListener('click', ()=> rate('again'));
+      good.addEventListener('click', ()=> rate('good'));
+      easy.addEventListener('click', ()=> rate('easy'));
+      shuffleBtn.addEventListener('click', ()=>{ cards.sort(()=> Math.random()-0.5); save(); buildQueue(); render(); });
+      exportBtn.addEventListener('click', ()=>{ const a=document.createElement('a'); a.download='flashcards.json'; a.href='data:application/json,'+encodeURIComponent(JSON.stringify(cards,null,2)); a.click(); });
+      importBtn.addEventListener('click', ()=> importFile.click());
+      importFile.addEventListener('change', async ()=>{ const file=importFile.files[0]; if(!file) return; const text=await file.text(); try{ const data=JSON.parse(text); if(Array.isArray(data)){ cards=data.map(x=>({ id:uid(), front:String(x.front||''), back:String(x.back||''), tags:Array.isArray(x.tags)?x.tags:[], ease:2500, due:Date.now(), lapses:0, reps:0 })); save(); render(); buildQueue(); } }catch(_){}
+      });
+      [search,fTag].forEach(el=> el.addEventListener('input', ()=>{ render(); buildQueue(); }));
+
+      render(); buildQueue();
+    })();
+  </script>
+</body>
+</html>

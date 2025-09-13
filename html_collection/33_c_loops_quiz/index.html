@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>C Loops Quiz</title>
+  <style>
+    :root{ --bg:#0b1022; --panel:#111827; --text:#e5e7eb; --muted:#9ca3af; --accent:#38bdf8; --ok:#22c55e; --bad:#ef4444 }
+    *{ box-sizing:border-box }
+    body{ margin:0; min-height:100vh; display:grid; place-items:center; background:radial-gradient(900px 600px at 15% 0%, #111827, #0b1022 60%, #050814); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial }
+    .app{ width:min(980px,95vw); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:18px; box-shadow:0 10px 40px rgba(0,0,0,.5) }
+    h1{ margin:0 0 10px 0; font-size:26px }
+    .muted{ color:var(--muted) }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); cursor:pointer; font-weight:600 }
+    .btn.primary{ background:linear-gradient(180deg,#38bdf8,#0284c7); border-color:rgba(56,189,248,.5) }
+    .btn.ok{ background:linear-gradient(180deg,#22c55e,#16a34a); border-color:rgba(34,197,94,.5) }
+    .panel{ background:var(--panel); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:14px }
+    .q{ font-weight:700; margin-bottom:8px }
+    .options{ display:grid; gap:8px }
+    .opt{ padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); cursor:pointer }
+    .opt.selected{ outline:2px solid var(--accent) }
+    .opt.correct{ background:rgba(34,197,94,.15); border-color:rgba(34,197,94,.5) }
+    .opt.wrong{ background:rgba(239,68,68,.15); border-color:rgba(239,68,68,.5) }
+    .footer{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; color:var(--muted) }
+    .review{ margin-top:14px }
+    .hide{ display:none }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>C Loops MCQ</h1>
+    <div class="muted">30 questions • Random order • Review on submit</div>
+    <div class="row" style="margin:10px 0">
+      <button id="startBtn" class="btn primary">Start Quiz</button>
+      <button id="restartBtn" class="btn" disabled>Restart</button>
+    </div>
+
+    <div id="quiz" class="panel hide">
+      <div id="counter" class="muted">1 / 30</div>
+      <div id="question" class="q">Question text</div>
+      <div id="options" class="options"></div>
+      <div class="footer">
+        <div></div>
+        <div>
+          <button id="nextBtn" class="btn" disabled>Next Question</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="result" class="panel hide"></div>
+    <div id="review" class="panel review hide"></div>
+  </div>
+
+  <script>
+    (function(){
+      const startBtn = document.getElementById('startBtn');
+      const restartBtn = document.getElementById('restartBtn');
+      const quizEl = document.getElementById('quiz');
+      const counterEl = document.getElementById('counter');
+      const questionEl = document.getElementById('question');
+      const optionsEl = document.getElementById('options');
+      const resultEl = document.getElementById('result');
+      const reviewEl = document.getElementById('review');
+      const nextBtn = document.getElementById('nextBtn');
+
+      const storageKey = 'c-loops-quiz-v1';
+
+      const questions = shuffle([
+        q('How many times does a do-while loop execute at minimum?',['0','1','2','Undefined'],1),
+        q('Which is correct for loop header?',['for(init; cond; inc)','for(init,cond,inc)','for(init;cond inc)','for(init cond inc)'],0),
+        q('Break in nested loops affects',['Innermost loop','All loops','Two loops','None'],0),
+        q('Continue in for loop jumps to',['Increment step','Condition','Next statement','Function end'],0),
+        q('Infinite loop example',['for(;;)','for(;1;)','while(0)','do{}while(0)'],0),
+        q('Post-increment used in for usually at',['Third expression','First','Second','None'],0),
+        q('While loop checks condition',['Before body','After body','Mid body','Never'],0),
+        q('To exit both inner and outer loops use',['Flag or goto','continue','return only','none'],0),
+        q('Loop variable scope when declared in for',['Within loop','Global','Function-wide','File'],0),
+        q('Correct decrement loop',['for(int i=n;i>0;--i)','for(int i=n;i>=0;i++)','for(i<n;i--)','for(i=0;i<n;--n)'],0),
+        q('Nested loops complexity',['Product of iterations','Sum of iterations','Max of two','Min of two'],0),
+        q('Which is valid?',['while(1){}','while(){}','while x {}','while(;){}'],0),
+        q('Loop to iterate array of size n',['for(i=0;i<n;i++)','for(i=1;i<=n;i++)','for(i=0;i<=n;i++)','for(i=1;i<n;i++)'],0),
+        q('do-while syntax ends with',[';','}',')','{'],0),
+        q('To skip even numbers',['if(i%2) continue;','if(i%2==0) break;','if(!i%2) continue;','continue if even'],0),
+        q('for(;;) differs from while(1)',['Equivalent','Different opt','Undefined','None'],0),
+        q('Loop unrolling is',['Optimization','Syntax','Macro only','Undefined'],0),
+        q('Off-by-one bugs arise from',['Wrong boundary','Wrong type','Wrong header','Linking'],0),
+        q('Sentinel loop uses',['Special value to stop','Two counters','Bit flags','Labels'],0),
+        q('Best to iterate until null-terminator',['for(;s[i];i++)','for(;s[i]!=NULL;i++)','for(;s[i]!=0x00;i++)','while(true)'],0),
+        q('Loop invariant is',['Condition staying true','Function','Variable','Macro'],0),
+        q('Use size_t for',['Array indices','Floats','Chars','Structs'],0),
+        q('Break in switch',['Exits switch','Exits loop outside','Exits function','Nothing'],0),
+        q('Comma operator in for',['Allowed','Not allowed','Runtime error','Deprecated'],0),
+        q('for-range is',['Not in C','In C','In C11','In C18'],0),
+        q('Label with goto',['Valid but avoid','Invalid','Best practice','Required'],0),
+        q('volatile inside loop prevents',['Over-optimization','Compilation','Runtime','IO'],0),
+        q('Loop over pointers',['for(p=a;p<b;p++)','for(p=a;p<=b;p++)','for(*p=a;*p<b;p++)','for(p=a;p<b;*p++)'],0),
+        q('Prefer pre-increment on iterators',['Micro-optimization','Syntax rule','Undefined','Required'],0),
+        q('Early return vs break',['return exits function','break exits loop','both same','none'],0)
+      ]);
+
+      const TOTAL = 30;
+      let usedQuestions = new Set();
+      let currentQuestion = null;
+      let questionCount = 0;
+
+      function q(text, opts, correct){ return { text, opts, correct }; }
+      function shuffle(a){ const r=[...a]; for(let i=r.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]] } return r }
+
+      function start(){
+        usedQuestions.clear();
+        questionCount = 0;
+        quizEl.classList.remove('hide'); resultEl.classList.add('hide'); reviewEl.classList.add('hide');
+        restartBtn.disabled = false;
+        getRandomQuestion();
+      }
+      function getRandomQuestion(){
+        if(usedQuestions.size >= questions.length) {
+          usedQuestions.clear();
+        }
+        
+        let randomIndex;
+        do {
+          randomIndex = Math.floor(Math.random() * questions.length);
+        } while(usedQuestions.has(randomIndex));
+        
+        usedQuestions.add(randomIndex);
+        currentQuestion = questions[randomIndex];
+        questionCount++;
+        render();
+      }
+
+      function render(){
+        if(!currentQuestion) return;
+        
+        counterEl.textContent = `Question ${questionCount}`;
+        questionEl.textContent = currentQuestion.text;
+        optionsEl.innerHTML = '';
+        
+        currentQuestion.opts.forEach((opt,i)=>{
+          const div = document.createElement('div');
+          div.className = 'opt';
+          div.textContent = opt;
+          div.addEventListener('click', ()=>{ selectOption(i); });
+          optionsEl.appendChild(div);
+        });
+      }
+
+      function selectOption(selectedIndex){
+        const optionDivs = optionsEl.querySelectorAll('.opt');
+        optionDivs.forEach((div, i) => {
+          div.style.pointerEvents = 'none';
+          if(i === currentQuestion.correct) {
+            div.classList.add('correct');
+          }
+          if(i === selectedIndex && i !== currentQuestion.correct) {
+            div.classList.add('wrong');
+          }
+        });
+        
+        nextBtn.disabled = false;
+      }
+      function next(){
+        nextBtn.disabled = true;
+        getRandomQuestion();
+      }
+
+      startBtn.addEventListener('click', start);
+      restartBtn.addEventListener('click', start);
+      nextBtn.addEventListener('click', next);
+    })();
+  </script>
+</body>
+</html>

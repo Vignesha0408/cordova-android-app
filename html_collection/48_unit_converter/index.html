@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Unit Converter</title>
+  <style>
+    :root{ --bg:#0b1022; --panel:#0f172a; --text:#e5e7eb; --muted:#94a3b8; --accent:#38bdf8 }
+    *{ box-sizing:border-box }
+    body{ margin:0; min-height:100vh; display:grid; place-items:center; background:radial-gradient(900px 600px at 15% 0%, #111827, #0b1022 60%, #050814); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial }
+    .app{ width:min(780px,92vw); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:18px; box-shadow:0 10px 40px rgba(0,0,0,.5) }
+    h1{ margin:0 0 8px 0; font-size:28px }
+    .tabs{ display:flex; gap:8px; margin:8px 0 }
+    .tab{ flex:1; text-align:center; padding:10px 12px; border-radius:10px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); color:var(--muted); cursor:pointer }
+    .tab.active{ color:var(--text); background:rgba(255,255,255,.12) }
+    .panel{ background:var(--panel); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:14px }
+    .row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:6px 0 }
+    .input{ padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:var(--text) }
+    select.input option{ font-weight:bold }
+    select.input option:checked{ color:#000; background:#fff }
+    select.input:focus{ font-weight:bold; color:#000 }
+    select.input{ font-weight:bold; color:#000 }
+    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px }
+    .unit{ display:flex; gap:8px; align-items:center }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); cursor:pointer; font-weight:600 }
+    .muted{ color:var(--muted) }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Unit Converter</h1>
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-tab="length">Length</div>
+      <div class="tab" data-tab="weight">Weight</div>
+      <div class="tab" data-tab="temp">Temperature</div>
+    </div>
+
+    <div id="length" class="panel">
+      <div class="row"><input id="lenValue" class="input" type="number" placeholder="Value" value="1" /><select id="lenFrom" class="input"><option>m</option><option>km</option><option>cm</option><option>mm</option><option>mi</option><option>yd</option><option>ft</option><option>in</option></select><span class="muted">to</span><select id="lenTo" class="input"><option>km</option><option>m</option><option>cm</option><option>mm</option><option>mi</option><option>yd</option><option>ft</option><option>in</option></select><button id="lenCopy" class="btn">Copy</button></div>
+      <div class="grid">
+        <div class="unit"><span class="muted">Result:</span><div id="lenResult">0.001 km</div></div>
+      </div>
+    </div>
+
+    <div id="weight" class="panel" style="display:none">
+      <div class="row"><input id="wValue" class="input" type="number" placeholder="Value" value="1" /><select id="wFrom" class="input"><option>kg</option><option>g</option><option>mg</option><option>lb</option><option>oz</option></select><span class="muted">to</span><select id="wTo" class="input"><option>g</option><option>kg</option><option>mg</option><option>lb</option><option>oz</option></select><button id="wCopy" class="btn">Copy</button></div>
+      <div class="grid">
+        <div class="unit"><span class="muted">Result:</span><div id="wResult">1000 g</div></div>
+      </div>
+    </div>
+
+    <div id="temp" class="panel" style="display:none">
+      <div class="row"><input id="tValue" class="input" type="number" placeholder="Value" value="0" /><select id="tFrom" class="input"><option>°C</option><option>°F</option><option>K</option></select><span class="muted">to</span><select id="tTo" class="input"><option>°F</option><option>°C</option><option>K</option></select><button id="tCopy" class="btn">Copy</button></div>
+      <div class="grid">
+        <div class="unit"><span class="muted">Result:</span><div id="tResult">32 °F</div></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const tabs=document.getElementById('tabs');
+      const panels={ length:document.getElementById('length'), weight:document.getElementById('weight'), temp:document.getElementById('temp') };
+      tabs.addEventListener('click', (e)=>{ const t=e.target.closest('.tab'); if(!t) return; [...tabs.children].forEach(x=> x.classList.toggle('active', x===t)); Object.keys(panels).forEach(k=> panels[k].style.display = (k===t.dataset.tab)?'':'none'); });
+
+      // Length
+      const lenValue=lenFrom=lenTo=lenResult=lenCopy=undefined; // for eslint
+      const lVal=document.getElementById('lenValue'); const lFrom=document.getElementById('lenFrom'); const lTo=document.getElementById('lenTo'); const lRes=document.getElementById('lenResult');
+      const LEN={ m:1, km:1000, cm:0.01, mm:0.001, mi:1609.344, yd:0.9144, ft:0.3048, in:0.0254 };
+      function convLen(){ const v=Number(lVal.value)||0; const meters=v*LEN[lFrom.value]; const out=meters/LEN[lTo.value]; lRes.textContent = `${out} ${lTo.value}`; }
+      [lVal,lFrom,lTo].forEach(el=> el.addEventListener('input', convLen));
+      document.getElementById('lenCopy').addEventListener('click', ()=> navigator.clipboard.writeText(lRes.textContent).catch(()=>{}));
+      convLen();
+
+      // Weight
+      const wVal=document.getElementById('wValue'); const wFrom=document.getElementById('wFrom'); const wTo=document.getElementById('wTo'); const wRes=document.getElementById('wResult');
+      const W={ kg:1, g:0.001, mg:0.000001, lb:0.45359237, oz:0.0283495231 };
+      function convW(){ const v=Number(wVal.value)||0; const kg=v*W[wFrom.value]; const out=kg/W[wTo.value]; wRes.textContent = `${out} ${wTo.value}`; }
+      [wVal,wFrom,wTo].forEach(el=> el.addEventListener('input', convW));
+      document.getElementById('wCopy').addEventListener('click', ()=> navigator.clipboard.writeText(wRes.textContent).catch(()=>{}));
+      convW();
+
+      // Temperature
+      const tVal=document.getElementById('tValue'); const tFrom=document.getElementById('tFrom'); const tTo=document.getElementById('tTo'); const tRes=document.getElementById('tResult');
+      function toC(v, u){ if(u==='°C') return v; if(u==='°F') return (v-32)*5/9; return v-273.15; }
+      function fromC(v, u){ if(u==='°C') return v; if(u==='°F') return v*9/5+32; return v+273.15; }
+      function convT(){ const v=Number(tVal.value)||0; const c=toC(v, tFrom.value); const out=fromC(c, tTo.value); tRes.textContent = `${out} ${tTo.value}`; }
+      [tVal,tFrom,tTo].forEach(el=> el.addEventListener('input', convT));
+      document.getElementById('tCopy').addEventListener('click', ()=> navigator.clipboard.writeText(tRes.textContent).catch(()=>{}));
+      convT();
+    })();
+  </script>
+</body>
+</html>

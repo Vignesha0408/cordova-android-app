@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Palette Viewer</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #569cd6;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .palette {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            max-width: 800px;
+        }
+        .color-box {
+            width: 100px;
+            height: 100px;
+            border-radius: 5px;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .color-box:hover {
+            transform: scale(1.1);
+        }
+        .color-box:hover::after {
+            content: attr(data-hex);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #4ec9b0;
+            padding: 5px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #007acc;
+            padding: 10px;
+            border-radius: 5px;
+            color: #fff;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .notification.show {
+            opacity: 1;
+        }
+        .notification.error {
+            background: #d16969;
+        }
+        @media (max-width: 600px) {
+            .color-box {
+                width: 80px;
+                height: 80px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Color Palette Viewer</h1>
+    <div class="palette" id="palette"></div>
+    <div class="notification" id="notification"></div>
+
+    <script>
+        const colors = [
+            '#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#33FFF5',
+            '#F5FF33', '#FF8333', '#33FF83', '#8333FF', '#FF3383',
+            '#A1FF33', '#33A1FF', '#FF5733', '#57FF33', '#5733FF',
+            '#FF3333', '#33FF33', '#3333FF', '#FFA133', '#33FFA1'
+        ];
+
+        function renderPalette() {
+            const palette = document.getElementById('palette');
+            colors.forEach(color => {
+                const box = document.createElement('div');
+                box.className = 'color-box';
+                box.style.backgroundColor = color;
+                box.setAttribute('data-hex', color);
+                box.addEventListener('click', () => copyToClipboard(color));
+                palette.appendChild(box);
+            });
+        }
+
+        function copyToClipboard(hex) {
+            const notification = document.getElementById('notification');
+
+            // Modern Clipboard API
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(hex).then(() => {
+                    showNotification('Copied: ' + hex);
+                }).catch(err => {
+                    console.error('Clipboard API failed:', err);
+                    fallbackCopy(hex);
+                });
+            } else {
+                // Fallback for non-secure contexts or unsupported browsers
+                fallbackCopy(hex);
+            }
+        }
+
+        function fallbackCopy(hex) {
+            const notification = document.getElementById('notification');
+            try {
+                // Create a temporary textarea for copying
+                const textarea = document.createElement('textarea');
+                textarea.value = hex;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showNotification('Copied: ' + hex);
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+                showNotification('Copy failed. Please copy manually: ' + hex, true);
+            }
+        }
+
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.remove('error');
+            if (isError) {
+                notification.classList.add('error');
+            }
+            notification.classList.add('show');
+            setTimeout(() => notification.classList.remove('show'), 2000);
+        }
+
+        // Initialize palette
+        renderPalette();
+    </script>
+</body>
+</html>
