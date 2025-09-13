@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alarm Clock</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #f0f0f0;
+      padding: 10px;
+    }
+
+    .container {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    #time {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      color: #2196F3;
+    }
+
+    .alarm-controls {
+      margin-bottom: 20px;
+    }
+
+    .alarm-inputs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    input[type="number"] {
+      padding: 5px;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 60px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      background: #4CAF50;
+      color: #fff;
+      cursor: pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:active {
+      background: #45a049;
+    }
+
+    #alarmsList {
+      margin-top: 20px;
+    }
+
+    .alarm {
+      background: #f9f9f9;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border-left: 4px solid #4CAF50;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .delete-btn {
+      background: #f44336;
+      padding: 5px 10px;
+    }
+
+    .delete-btn:active {
+      background: #d32f2f;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        max-width: 100%;
+      }
+
+      #time {
+        font-size: 1.8em;
+      }
+
+      input[type="number"] {
+        width: 50px;
+        font-size: 0.9em;
+      }
+
+      button {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Alarm Clock</h1>
+    <div id="time">00:00:00</div>
+    <div class="alarm-controls">
+      <div class="alarm-inputs">
+        <input type="number" id="hours" min="0" max="23" placeholder="HH">
+        <input type="number" id="minutes" min="0" max="59" placeholder="MM">
+        <input type="number" id="seconds" min="0" max="59" placeholder="SS">
+      </div>
+      <button onclick="setAlarm()">Set Alarm</button>
+    </div>
+    <div id="alarmsList"></div>
+  </div>
+
+  <script>
+    let timeDisplay = document.getElementById('time');
+    let alarmsList = document.getElementById('alarmsList');
+    let alarms = [];
+
+    function updateTime() {
+      let now = new Date();
+      let hours = now.getHours().toString().padStart(2, '0');
+      let minutes = now.getMinutes().toString().padStart(2, '0');
+      let seconds = now.getSeconds().toString().padStart(2, '0');
+      timeDisplay.textContent = `${hours}:${minutes}:${seconds}`;
+
+      checkAlarms();
+    }
+
+    function setAlarm() {
+      let hours = parseInt(document.getElementById('hours').value) || 0;
+      let minutes = parseInt(document.getElementById('minutes').value) || 0;
+      let seconds = parseInt(document.getElementById('seconds').value) || 0;
+
+      if (hours > 23 || minutes > 59 || seconds > 59) {
+        alert('Invalid time!');
+        return;
+      }
+
+      let alarmTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      alarms.push(alarmTime);
+
+      let alarmDiv = document.createElement('div');
+      alarmDiv.className = 'alarm';
+      alarmDiv.innerHTML = `${alarmTime} <button class="delete-btn" onclick="this.parentElement.remove(); alarms = alarms.filter(a => a !== '${alarmTime}');">Delete</button>`;
+      alarmsList.appendChild(alarmDiv);
+
+      document.getElementById('hours').value = '';
+      document.getElementById('minutes').value = '';
+      document.getElementById('seconds').value = '';
+    }
+
+    function checkAlarms() {
+      let now = new Date();
+      let currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+      if (alarms.includes(currentTime)) {
+        alert(`Alarm! Time is ${currentTime}`);
+        alarms = alarms.filter(a => a !== currentTime);
+        alarmsList.innerHTML = '';
+        alarms.forEach(alarm => {
+          let alarmDiv = document.createElement('div');
+          alarmDiv.className = 'alarm';
+          alarmDiv.innerHTML = `${alarm} <button class="delete-btn" onclick="this.parentElement.remove(); alarms = alarms.filter(a => a !== '${alarm}');">Delete</button>`;
+          alarmsList.appendChild(alarmDiv);
+        });
+      }
+    }
+
+    // Update time every second
+    setInterval(updateTime, 1000);
+
+    // Handle keyboard input for Android compatibility
+    document.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+        setAlarm();
+      }
+    });
+
+    // Prevent default form submission behavior
+    document.addEventListener('submit', (event) => event.preventDefault());
+  </script>
+</body>
+</html>
