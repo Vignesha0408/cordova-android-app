@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Flexbox Quiz</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .quiz-container {
+            background: #252526;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            max-width: 700px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #569cd6;
+            margin: 0;
+        }
+        .question {
+            background: #2d2d2d;
+            padding: 15px;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        pre {
+            background: #1e1e1e;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            color: #d4d4d4;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .option {
+            padding: 10px;
+            background: #3c3c3c;
+            border: 1px solid #569cd6;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .option:hover {
+            background: #4a4a4a;
+        }
+        .option.selected {
+            background: #007acc;
+            color: #fff;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007acc;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            align-self: center;
+        }
+        button:hover {
+            background: #005f99;
+        }
+        #result {
+            text-align: center;
+            font-size: 18px;
+            color: #4ec9b0;
+        }
+        @media (max-width: 600px) {
+            .quiz-container {
+                padding: 15px;
+            }
+            .question {
+                font-size: 14px;
+            }
+            pre {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>CSS Flexbox Practice Quiz</h1>
+        <div id="quiz"></div>
+        <button onclick="submitQuiz()">Submit Quiz</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "What does `display: flex` do to a container?",
+                code: `.container { display: flex; }`,
+                options: [
+                    "Makes it a block element",
+                    "Turns its children into flex items",
+                    "Aligns items in a grid",
+                    "Hides the container"
+                ],
+                correct: 1
+            },
+            {
+                question: "What is the default value of `flex-direction`?",
+                code: `.container { display: flex; }`,
+                options: [
+                    "column",
+                    "row",
+                    "row-reverse",
+                    "column-reverse"
+                ],
+                correct: 1
+            },
+            {
+                question: "What does `justify-content: space-between` do?",
+                code: `.container {
+    display: flex;
+    justify-content: space-between;
+}`,
+                options: [
+                    "Spaces items evenly with no gaps at edges",
+                    "Places items at start and end with space between",
+                    "Centers all items",
+                    "Stacks items vertically"
+                ],
+                correct: 1
+            },
+            {
+                question: "What does `align-items: center` affect?",
+                code: `.container {
+    display: flex;
+    align-items: center;
+    height: 200px;
+}`,
+                options: [
+                    "Horizontal alignment of flex items",
+                    "Vertical alignment of flex items",
+                    "Spacing between flex items",
+                    "Flex container's width"
+                ],
+                correct: 1
+            },
+            {
+                question: "What does `flex-wrap: wrap` allow?",
+                code: `.container {
+    display: flex;
+    flex-wrap: wrap;
+}`,
+                options: [
+                    "Items to shrink below their min-width",
+                    "Items to wrap to the next line",
+                    "Items to align in a single row",
+                    "Items to stretch to fill the container"
+                ],
+                correct: 1
+            },
+            {
+                question: "What does `flex: 1` on a flex item mean?",
+                code: `.item { flex: 1; }`,
+                options: [
+                    "Item takes 1% of container width",
+                    "Item grows and shrinks equally, taking available space",
+                    "Item has a fixed width",
+                    "Item aligns to the start"
+                ],
+                correct: 1
+            },
+            {
+                question: "What is the purpose of `flex-grow`?",
+                code: `.item { flex-grow: 2; }`,
+                options: [
+                    "Controls item shrinkage",
+                    "Defines how much an item grows relative to others",
+                    "Sets the item's base size",
+                    "Aligns the item vertically"
+                ],
+                correct: 1
+            },
+            {
+                question: "What does `align-content` affect in a flex container?",
+                code: `.container {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: space-around;
+}`,
+                options: [
+                    "Alignment of individual items",
+                    "Alignment of flex lines when wrapping",
+                    "Spacing between items in a single line",
+                    "Container's height"
+                ],
+                correct: 1
+            },
+            {
+                question: "What happens with `flex-shrink: 0`?",
+                code: `.item { flex-shrink: 0; }`,
+                options: [
+                    "Item grows to fill space",
+                    "Item cannot shrink below its initial size",
+                    "Item aligns to the center",
+                    "Item wraps to the next line"
+                ],
+                correct: 1
+            },
+            {
+                question: "What is the effect of `order: 2` on a flex item?",
+                code: `.item { order: 2; }`,
+                options: [
+                    "Changes item’s size",
+                    "Sets item’s stacking order visually",
+                    "Aligns item to the end",
+                    "Prevents item from shrinking"
+                ],
+                correct: 1
+            }
+        ];
+
+        let userAnswers = new Array(questions.length).fill(null);
+
+        function renderQuiz() {
+            const quizDiv = document.getElementById('quiz');
+            quizDiv.innerHTML = '';
+            questions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                questionDiv.innerHTML = `
+                    <p>${index + 1}. ${q.question}</p>
+                    <pre>${q.code}</pre>
+                    <div class="options">
+                        ${q.options.map((option, i) => `
+                            <div class="option" onclick="selectOption(${index}, ${i})">${option}</div>
+                        `).join('')}
+                    </div>
+                `;
+                quizDiv.appendChild(questionDiv);
+            });
+        }
+
+        function selectOption(questionIndex, optionIndex) {
+            userAnswers[questionIndex] = optionIndex;
+            const options = document.getElementsByClassName('question')[questionIndex].getElementsByClassName('option');
+            for (let i = 0; i < options.length; i++) {
+                options[i].classList.remove('selected');
+                if (i === optionIndex) {
+                    options[i].classList.add('selected');
+                }
+            }
+        }
+
+        function submitQuiz() {
+            let score = 0;
+            const resultDiv = document.getElementById('result');
+            let feedback = '';
+
+            userAnswers.forEach((answer, index) => {
+                if (answer === questions[index].correct) {
+                    score++;
+                } else if (answer !== null) {
+                    feedback += `Question ${index + 1}: Incorrect. Correct answer: ${questions[index].options[questions[index].correct]}<br>`;
+                } else {
+                    feedback += `Question ${index + 1}: Not answered.<br>`;
+                }
+            });
+
+            resultDiv.innerHTML = `
+                Score: ${score}/${questions.length} (${((score / questions.length) * 100).toFixed(2)}%)<br>
+                ${feedback || 'All answers correct!'}
+            `;
+        }
+
+        // Initialize quiz
+        renderQuiz();
+    </script>
+</body>
+</html>

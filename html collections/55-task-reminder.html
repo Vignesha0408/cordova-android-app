@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Task Reminder</title>
+  <style>
+    :root{ --bg:#0a0f1f; --panel:#0f172a; --muted:#94a3b8; --text:#e5e7eb; --accent:#60a5fa; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444 }
+    *{ box-sizing:border-box }
+    body{ margin:0; min-height:100vh; display:grid; place-items:center; background:radial-gradient(700px 500px at 10% 0%, #0b1226, #0a0f1f 60%, #050814); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial }
+    .app{ width:min(980px,94vw); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:18px; box-shadow:0 10px 40px rgba(0,0,0,.5) }
+    h1{ margin:0 0 10px; font-size:28px }
+    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px }
+    .panel{ background:var(--panel); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:14px }
+    .row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:6px 0 }
+    .input{ padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:var(--text) }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); cursor:pointer; font-weight:600 }
+    .muted{ color:var(--muted) }
+    .list{ max-height:470px; overflow:auto; margin-top:8px }
+    .item{ display:grid; grid-template-columns: auto 1fr auto auto; gap:8px; align-items:center; padding:10px; border-bottom:1px dashed rgba(255,255,255,.1) }
+    .badge{ padding:3px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); font-size:12px; margin-left:6px }
+    .prio-low{ color:#93c5fd } .prio-med{ color:var(--warn) } .prio-high{ color:var(--bad) }
+    .done span{ text-decoration:line-through; opacity:.7 }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Task Reminder</h1>
+
+    <div class="grid">
+      <div class="panel">
+        <div class="row">
+          <input id="title" class="input" placeholder="Task title" style="flex:1; min-width:220px" />
+          <input id="dueDate" class="input" type="date" />
+          <input id="dueTime" class="input" type="time" />
+          <select id="prio" class="input">
+            <option value="low">Low</option>
+            <option value="med" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+          <input id="tags" class="input" placeholder="tags: work,home" style="min-width:160px" />
+          <button id="add" class="btn">Add</button>
+        </div>
+        <div class="row">
+          <input id="search" class="input" placeholder="Search title or tag" style="flex:1" />
+          <select id="fView" class="input">
+            <option value="all">All</option>
+            <option value="today">Today</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="overdue">Overdue</option>
+            <option value="done">Completed</option>
+          </select>
+          <select id="fTag" class="input"><option value="all">All tags</option></select>
+          <button id="export" class="btn">Export JSON</button>
+          <button id="clear" class="btn">Clear Completed</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="row"><strong>Tasks</strong></div>
+        <div id="list" class="list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const title=document.getElementById('title');
+      const dueDate=document.getElementById('dueDate');
+      const dueTime=document.getElementById('dueTime');
+      const prio=document.getElementById('prio');
+      const tags=document.getElementById('tags');
+      const add=document.getElementById('add');
+      const search=document.getElementById('search');
+      const fView=document.getElementById('fView');
+      const fTag=document.getElementById('fTag');
+      const exportBtn=document.getElementById('export');
+      const clearBtn=document.getElementById('clear');
+      const list=document.getElementById('list');
+      const key='task-reminder-v1';
+
+      let tasks=load();
+      let notifyPermissionAsked=false;
+
+      function load(){ try{ return JSON.parse(localStorage.getItem(key))||[] }catch(_){ return [] } }
+      function save(){ localStorage.setItem(key, JSON.stringify(tasks)); }
+      function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+
+      function parseTags(s){ return (s||'').split(',').map(t=>t.trim()).filter(Boolean); }
+      function formatDateTime(diso){ const d=new Date(diso); if(isNaN(d)) return ''; return d.toLocaleString(); }
+      function combineDateTime(d,t){ if(!d && !t) return ''; return new Date(`${d||new Date().toISOString().slice(0,10)}T${t||'23:59'}`).toISOString(); }
+
+      function addTask(){ const titleVal=title.value.trim(); if(!titleVal) return; const id=uid(); const when=combineDateTime(dueDate.value, dueTime.value); const task={ id, title:titleVal, when, prio:prio.value, tags:parseTags(tags.value), done:false, created:new Date().toISOString() }; tasks.unshift(task); save(); title.value=''; tags.value=''; dueDate.value=''; dueTime.value=''; render(); maybeSchedule(task); }
+      function toggleDone(id){ const t=tasks.find(x=>x.id===id); if(!t) return; t.done=!t.done; save(); render(); }
+      function removeTask(id){ tasks=tasks.filter(t=>t.id!==id); save(); render(); }
+      function editTask(id){ const t=tasks.find(x=>x.id===id); if(!t) return; const nt=prompt('Edit title', t.title); if(nt===null) return; t.title=nt.trim()||t.title; const nw=prompt('Edit datetime (YYYY-MM-DD HH:MM) or blank', t.when?new Date(t.when).toISOString().slice(0,16).replace('T',' '):''); if(nw!==null){ const v=nw.trim(); if(v){ const [dpart, tpart]=v.split(' '); t.when=new Date(`${dpart}T${tpart||'23:59'}`).toISOString(); } }
+        save(); render(); }
+      function snoozeTask(id, minutes){ const t=tasks.find(x=>x.id===id); if(!t) return; const base = t.when? new Date(t.when) : new Date(); t.when = new Date(base.getTime()+minutes*60000).toISOString(); save(); render(); maybeSchedule(t); }
+
+      function allTags(){ const set=new Set(); tasks.forEach(t=> t.tags.forEach(tag=> set.add(tag))); return ['all', ...[...set].sort()]; }
+      function buildTagFilter(){ fTag.innerHTML=''; allTags().forEach(tag=>{ const o=document.createElement('option'); o.value=tag; o.textContent=tag; fTag.appendChild(o); }); }
+
+      function matchesFilters(t){ const q=search.value.trim().toLowerCase(); if(q && !(t.title.toLowerCase().includes(q) || t.tags.some(a=>a.toLowerCase().includes(q)))) return false; if(fTag.value!=='all' && !t.tags.includes(fTag.value)) return false; const now=new Date(); if(fView.value==='done') return t.done; const d=t.when? new Date(t.when) : null; if(fView.value==='today'){ if(!d) return false; const isToday = d.toDateString()===now.toDateString(); return isToday && !t.done; } if(fView.value==='upcoming'){ return (!t.done) && d && d>now; } if(fView.value==='overdue'){ return (!t.done) && d && d<now; } return !t.done; }
+
+      function render(){ buildTagFilter(); list.innerHTML=''; const arr=tasks.filter(matchesFilters).sort((a,b)=>{ const ap=a.when||'', bp=b.when||''; return ap.localeCompare(bp); }); for(const t of arr){ const row=document.createElement('div'); row.className='item'+(t.done?' done':''); const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=t.done; cb.addEventListener('change', ()=> toggleDone(t.id)); const main=document.createElement('div'); const whenTxt=t.when? formatDateTime(t.when) : 'No due date'; main.innerHTML = `<span>${t.title}</span> <span class=\"badge\">${whenTxt}</span> ${t.tags.map(a=>`<span class=\"badge\">#${a}</span>`).join(' ')}`; const pr=document.createElement('div'); pr.className = 'prio-'+t.prio; pr.textContent = t.prio.toUpperCase(); const actions=document.createElement('div'); const edit=document.createElement('button'); edit.className='btn'; edit.textContent='Edit'; edit.addEventListener('click', ()=> editTask(t.id)); const sn=document.createElement('button'); sn.className='btn'; sn.textContent='Snooze +10m'; sn.addEventListener('click', ()=> snoozeTask(t.id, 10)); const rm=document.createElement('button'); rm.className='btn'; rm.textContent='Remove'; rm.addEventListener('click', ()=> removeTask(t.id)); actions.append(edit,sn,rm); row.append(cb, main, pr, actions); list.appendChild(row); }
+      }
+
+      function exportJSON(){ const a=document.createElement('a'); a.download='tasks.json'; a.href='data:application/json,'+encodeURIComponent(JSON.stringify(tasks,null,2)); a.click(); }
+
+      function maybeAskNotify(){ if(notifyPermissionAsked) return; notifyPermissionAsked=true; if('Notification' in window && Notification.permission==='default'){ try{ Notification.requestPermission(); }catch(_){} }
+      }
+
+      let timer=null;
+      function maybeSchedule(task){ maybeAskNotify(); if(!('Notification' in window)) return; if(Notification.permission!=='granted') return; if(!task.when || task.done) return; const due=new Date(task.when).getTime(); const now=Date.now(); const delay = Math.max(0, Math.min(2147483647, due-now)); // clamp to setTimeout range
+        setTimeout(()=>{
+          if(document.hidden && !task.done){ try{ new Notification('Task Reminder', { body: task.title }); }catch(_){} }
+        }, delay);
+      }
+
+      function rescheduleAll(){ if(timer) clearTimeout(timer); tasks.forEach(maybeSchedule); }
+
+      add.addEventListener('click', addTask);
+      [search,fView,fTag].forEach(el=> el.addEventListener('input', render));
+      exportBtn.addEventListener('click', exportJSON);
+      clearBtn.addEventListener('click', ()=>{ tasks = tasks.filter(t=> !t.done); save(); render(); });
+
+      render(); rescheduleAll();
+    })();
+  </script>
+</body>
+</html>

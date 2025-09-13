@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Positive Habits List</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: #252526;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            max-width: 600px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        h1 {
+            color: #569cd6;
+            text-align: center;
+            margin: 0;
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            background: #2d2d2d;
+            border: 1px solid #569cd6;
+            border-radius: 5px;
+            color: #d4d4d4;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px;
+            background: #007acc;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #005f99;
+        }
+        .habits-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .habit {
+            background: #2d2d2d;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.2s;
+        }
+        .habit.completed {
+            background: #3c3c3c;
+            text-decoration: line-through;
+            color: #858585;
+        }
+        .habit:hover {
+            transform: scale(1.02);
+        }
+        .habit-content {
+            flex: 1;
+            color: #4ec9b0;
+            font-size: 16px;
+        }
+        .habit-actions button {
+            font-size: 14px;
+            padding: 5px 10px;
+        }
+        .motivation {
+            text-align: center;
+            color: #4ec9b0;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .motivation.show {
+            opacity: 1;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            input[type="text"] {
+                font-size: 14px;
+            }
+            .habit-content {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Positive Habits List</h1>
+        <div class="input-area">
+            <input type="text" id="habitInput" placeholder="Add a positive habit...">
+            <button onclick="addHabit()">Add</button>
+        </div>
+        <div class="motivation" id="motivation"></div>
+        <div class="habits-list" id="habitsList"></div>
+    </div>
+
+    <script>
+        let habits = JSON.parse(localStorage.getItem('habits')) || [];
+        const motivationalMessages = [
+            "Great job adding a habit! You're building a better you!",
+            "Keep it up! Every habit brings you closer to your goals!",
+            "Awesome! Your positive habits are shining through!",
+            "You're unstoppable! Another habit to make you stronger!",
+            "Fantastic! Your commitment to growth is inspiring!"
+        ];
+
+        function saveHabits() {
+            localStorage.setItem('habits', JSON.stringify(habits));
+        }
+
+        function showMotivation() {
+            const motivation = document.getElementById('motivation');
+            const randomMessage = motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)];
+            motivation.textContent = randomMessage;
+            motivation.classList.add('show');
+            setTimeout(() => motivation.classList.remove('show'), 3000);
+        }
+
+        function renderHabits() {
+            const habitsList = document.getElementById('habitsList');
+            habitsList.innerHTML = '';
+            habits.forEach((habit, index) => {
+                const habitDiv = document.createElement('div');
+                habitDiv.className = `habit ${habit.completed ? 'completed' : ''}`;
+                habitDiv.innerHTML = `
+                    <input type="checkbox" ${habit.completed ? 'checked' : ''} onclick="toggleHabit(${index})">
+                    <div class="habit-content">${habit.content}</div>
+                    <div class="habit-actions">
+                        <button onclick="deleteHabit(${index})">Delete</button>
+                    </div>
+                `;
+                habitsList.appendChild(habitDiv);
+            });
+        }
+
+        function addHabit() {
+            const habitInput = document.getElementById('habitInput');
+            const content = habitInput.value.trim();
+            if (content) {
+                habits.push({
+                    content,
+                    completed: false
+                });
+                habitInput.value = '';
+                saveHabits();
+                renderHabits();
+                showMotivation();
+            }
+        }
+
+        function toggleHabit(index) {
+            habits[index].completed = !habits[index].completed;
+            saveHabits();
+            renderHabits();
+            if (habits[index].completed) {
+                showMotivation();
+            }
+        }
+
+        function deleteHabit(index) {
+            habits.splice(index, 1);
+            saveHabits();
+            renderHabits();
+        }
+
+        // Handle Enter key to add habit
+        document.getElementById('habitInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addHabit();
+            }
+        });
+
+        // Initialize habits
+        renderHabits();
+    </script>
+</body>
+</html>

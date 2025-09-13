@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Programming Quiz Collection</title>
+  <style>
+    :root{ --bg:#0b1022; --panel:#111827; --text:#e5e7eb; --muted:#9ca3af; --accent:#38bdf8; --ok:#22c55e; --bad:#ef4444 }
+    *{ box-sizing:border-box }
+    body{ margin:0; min-height:100vh; display:grid; place-items:center; background:radial-gradient(900px 600px at 15% 0%, #111827, #0b1022 60%, #050814); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial }
+    .app{ width:min(980px,95vw); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:18px; box-shadow:0 10px 40px rgba(0,0,0,.5) }
+    h1{ margin:0 0 10px 0; font-size:26px }
+    .muted{ color:var(--muted) }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); cursor:pointer; font-weight:600 }
+    .btn.primary{ background:linear-gradient(180deg,#38bdf8,#0284c7); border-color:rgba(56,189,248,.5) }
+    .btn.ok{ background:linear-gradient(180deg,#22c55e,#16a34a); border-color:rgba(34,197,94,.5) }
+    .panel{ background:var(--panel); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:14px }
+    .q{ font-weight:700; margin-bottom:8px }
+    .options{ display:grid; gap:8px }
+    .opt{ padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); cursor:pointer }
+    .opt.selected{ outline:2px solid var(--accent) }
+    .opt.correct{ background:rgba(34,197,94,.15); border-color:rgba(34,197,94,.5) }
+    .opt.wrong{ background:rgba(239,68,68,.15); border-color:rgba(239,68,68,.5) }
+    .footer{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; color:var(--muted) }
+    .review{ margin-top:14px }
+    .hide{ display:none }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Programming Quiz Collection</h1>
+    <div class="muted">30 mixed questions • Random order • Review on submit</div>
+    <div class="row" style="margin:10px 0">
+      <button id="startBtn" class="btn primary">Start Quiz</button>
+      <button id="restartBtn" class="btn" disabled>Restart</button>
+      <button id="submitBtn" class="btn ok" disabled>Submit</button>
+    </div>
+
+    <div id="quiz" class="panel hide">
+      <div id="counter" class="muted">1 / 30</div>
+      <div id="question" class="q">Question text</div>
+      <div id="options" class="options"></div>
+      <div class="footer">
+        <div></div>
+        <div>
+          <button id="prevBtn" class="btn">Prev</button>
+          <button id="nextBtn" class="btn">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="result" class="panel hide"></div>
+    <div id="review" class="panel review hide"></div>
+  </div>
+
+  <script>
+    (function(){
+      const startBtn = document.getElementById('startBtn');
+      const restartBtn = document.getElementById('restartBtn');
+      const submitBtn = document.getElementById('submitBtn');
+      const quizEl = document.getElementById('quiz');
+      const counterEl = document.getElementById('counter');
+      const questionEl = document.getElementById('question');
+      const optionsEl = document.getElementById('options');
+      const resultEl = document.getElementById('result');
+      const reviewEl = document.getElementById('review');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+
+      const storageKey = 'prog-quiz-collection-v1';
+
+      const questions = shuffle([
+        q('Big-O of binary search',['O(log n)','O(n)','O(n log n)','O(1)'],0),
+        q('HTTP method idempotent by definition',['PUT','POST','PATCH','CONNECT'],0),
+        q('SQL to get all columns from table users',['SELECT * FROM users;','GET * FROM users;','FETCH users;','LIST users;'],0),
+        q('JavaScript type of null is',['object','null','undefined','number'],0),
+        q('CSS to select element by id',['#id','.id','id:','@id'],0),
+        q('Git command to stage changes',['git add .','git commit -m','git push','git pull'],0),
+        q('REST stands for',['Representational State Transfer','Remote Execution Stack Transfer','Resource Endpoint Service Transport','Random Service Transfer'],0),
+        q('Which is NoSQL?',['MongoDB','MySQL','PostgreSQL','SQLite'],0),
+        q('Container runtime',['Docker','Kubernetes','Ansible','Vagrant'],0),
+        q('Kubernetes orchestrates',['Containers','Bare metal','VM hypervisors','Routers'],0),
+        q('Encryption in transit commonly via',['TLS','KMS','AES at rest','S/MIME only'],0),
+        q('JWT contains',['Claims','SQL rows','Index','CSS'],0),
+        q('Python list is',['Dynamic array','Linked list','Tuple','Set'],0),
+        q('C++ RAII ensures',['Resource release on scope exit','Faster CPU','GC','JIT'],0),
+        q('Time complexity of heap push',['O(log n)','O(1)','O(n)','O(n log n)'],0),
+        q('Hash map expected lookup',['O(1)','O(n)','O(log n)','O(n log n)'],0),
+        q('Design pattern for creating families of objects',['Abstract Factory','Strategy','Observer','Adapter'],0),
+        q('SQL JOIN that returns all rows from both sides',['FULL OUTER JOIN','INNER JOIN','LEFT JOIN','RIGHT JOIN'],0),
+        q('HTTP status 201 means',['Created','OK','No Content','Moved Permanently'],0),
+        q('Binary tree traversal LNR is',['Inorder','Preorder','Postorder','Level order'],0),
+        q('Command to create branch',['git checkout -b','git merge','git rebase','git clone'],0),
+        q('React state updater should be',['Immutable','Mutated directly','Global var','Synchronous always'],0),
+        q('Node event loop handles',['Async I/O callbacks','GPU render','DB internals','Kernel scheduling'],0),
+        q('Index in DB helps',['Faster reads','Faster writes always','Less RAM','Backup'],0),
+        q('ACID A stands for',['Atomicity','Availability','Authenticity','Asynchronous'],0),
+        q('Message queue decouples',['Producers/consumers','CPU/Memory','Client/DB schema','Router/Firewall'],0),
+        q('Caching improves',['Latency','Data integrity','Write amplification','CPU frequency'],0),
+        q('OAuth 2.0 grant for server-side apps',['Authorization Code','Implicit','Password','Device'],0),
+        q('Microservices tradeoff often',['Complex ops','Lower latency always','No network hops','Monolith simplicity'],0),
+        q('CDN mostly stores',['Static assets at edge','Database rows','VM images','Kernel modules'],0)
+      ]);
+
+      const TOTAL = 30;
+      let order = [...Array(questions.length).keys()];
+      let idx = 0;
+      let answers = new Array(TOTAL).fill(null);
+
+      function q(text, opts, correct){ return { text, opts, correct }; }
+      function shuffle(a){ const r=[...a]; for(let i=r.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]] } return r }
+
+      function start(){ order = shuffle(order).slice(0, TOTAL); idx=0; answers=new Array(TOTAL).fill(null); quizEl.classList.remove('hide'); resultEl.classList.add('hide'); reviewEl.classList.add('hide'); restartBtn.disabled=false; submitBtn.disabled=false; render(); save(); }
+      function render(){ const qn=questions[order[idx]]; counterEl.textContent=`${idx+1} / ${TOTAL}`; questionEl.textContent=qn.text; optionsEl.innerHTML=''; qn.opts.forEach((opt,i)=>{ const div=document.createElement('div'); div.className='opt'+(answers[idx]===i?' selected':''); div.textContent=opt; div.addEventListener('click',()=>{ answers[idx]=i; render(); save(); }); optionsEl.appendChild(div); }); }
+      function score(){ let s=0; for(let i=0;i<answers.length;i++){ const qi=questions[order[i]]; if(answers[i]===qi.correct) s++; } return s; }
+      function prev(){ if(idx>0){ idx--; render(); } }
+      function next(){ if(idx<TOTAL-1){ idx++; render(); } }
+      function submit(){ const s=score(); resultEl.classList.remove('hide'); resultEl.innerHTML = `<div><strong>Result:</strong> ${s} / ${TOTAL}</div>`; reviewEl.classList.remove('hide'); reviewEl.innerHTML=''; for(let i=0;i<TOTAL;i++){ const qi=questions[order[i]]; const block=document.createElement('div'); block.className='panel'; const qd=document.createElement('div'); qd.className='q'; qd.textContent = `${i+1}. ${qi.text}`; block.appendChild(qd); qi.opts.forEach((o,k)=>{ const line=document.createElement('div'); line.className='opt'; if(k===qi.correct) line.classList.add('correct'); if(answers[i]===k && k!==qi.correct) line.classList.add('wrong'); line.textContent = String.fromCharCode(65+k)+') '+o; block.appendChild(line); }); reviewEl.appendChild(block); } submitBtn.disabled=true; }
+      function save(){ localStorage.setItem(storageKey, JSON.stringify({ order, idx, answers })); }
+      function restore(){ try{ const v=JSON.parse(localStorage.getItem(storageKey)); if(v && Array.isArray(v.order) && Array.isArray(v.answers)){ order=v.order; answers=v.answers; idx=v.idx||0; quizEl.classList.remove('hide'); restartBtn.disabled=false; submitBtn.disabled=false; render(); } }catch(_){ } }
+
+      startBtn.addEventListener('click', start); restartBtn.addEventListener('click', ()=>{ localStorage.removeItem(storageKey); start(); }); submitBtn.addEventListener('click', submit); prevBtn.addEventListener('click', prev); nextBtn.addEventListener('click', next);
+      restore();
+    })();
+  </script>
+</body>
+</html>

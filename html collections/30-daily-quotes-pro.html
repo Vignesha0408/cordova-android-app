@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Daily Quotes Pro</title>
+  <style>
+    :root{ --bg:#0b1022; --panel:#0f172a; --text:#e5e7eb; --muted:#94a3b8; --accent:#38bdf8; --ok:#22c55e }
+    *{ box-sizing:border-box }
+    body{ margin:0; min-height:100vh; display:grid; place-items:center; background:radial-gradient(900px 600px at 15% 0%, #111827, #0b1022 60%, #050814); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial }
+    .app{ width:min(820px,94vw); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:18px; box-shadow:0 10px 40px rgba(0,0,0,.5) }
+    h1{ margin:0 0 8px 0; font-size:28px }
+    .panel{ background:var(--panel); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:16px; margin-top:10px }
+    .quote{ font-size:24px; line-height:1.5; margin:10px 0 }
+    .author{ color:var(--muted); margin-top:6px }
+    .row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); cursor:pointer; font-weight:600 }
+    .list{ display:grid; gap:10px; margin-top:12px }
+    .item{ border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:12px }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Daily Quotes Pro</h1>
+    <div class="panel">
+      <div id="text" class="quote">Stay hungry. Stay foolish.</div>
+      <div id="author" class="author">— Steve Jobs</div>
+      <div class="row" style="margin-top:10px">
+        <button id="next" class="btn">Next</button>
+        <button id="fav" class="btn">Favorite</button>
+        <button id="share" class="btn">Copy</button>
+        <input id="search" class="btn" placeholder="Search quotes..." style="min-width:220px" />
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="row"><strong>Favorites</strong><button id="clearFav" class="btn">Clear</button></div>
+      <div id="favorites" class="list"></div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const quotes = [
+        ['Stay hungry. Stay foolish.','Steve Jobs'],
+        ['The only way to do great work is to love what you do.','Steve Jobs'],
+        ['Be the change that you wish to see in the world.','Mahatma Gandhi'],
+        ['Whether you think you can or you think you can’t, you’re right.','Henry Ford'],
+        ['It always seems impossible until it’s done.','Nelson Mandela'],
+        ['The future depends on what you do today.','Mahatma Gandhi'],
+        ['Simplicity is the ultimate sophistication.','Leonardo da Vinci'],
+        ['Everything you can imagine is real.','Pablo Picasso'],
+        ['Believe you can and you’re halfway there.','Theodore Roosevelt'],
+        ['Do or do not. There is no try.','Yoda']
+      ];
+      const text=document.getElementById('text');
+      const author=document.getElementById('author');
+      const next=document.getElementById('next');
+      const fav=document.getElementById('fav');
+      const share=document.getElementById('share');
+      const search=document.getElementById('search');
+      const favorites=document.getElementById('favorites');
+      const clearFav=document.getElementById('clearFav');
+      const storageKey='daily-quotes-fav-v1';
+      let idx=0; let favs=load();
+
+      function load(){ try{ return JSON.parse(localStorage.getItem(storageKey))||[] }catch(_){ return [] } }
+      function save(){ localStorage.setItem(storageKey, JSON.stringify(favs)); }
+
+      function show(i){ const q=quotes[i%quotes.length]; text.textContent = '“'+q[0]+'”'; author.textContent = '— '+q[1]; }
+      function random(){ idx = Math.floor(Math.random()*quotes.length); show(idx); }
+      function addFav(){ const q=[text.textContent.replace(/[“”]/g,''), author.textContent.replace(/^—\s*/,'')]; if(!favs.find(x=> x[0]===q[0] && x[1]===q[1])){ favs.unshift(q); save(); renderFav(); } }
+      async function copy(){ try{ await navigator.clipboard.writeText(`${text.textContent} ${author.textContent}`); share.textContent='Copied'; setTimeout(()=>share.textContent='Copy',1000); }catch(_){ } }
+      function renderFav(){ const q=search.value.toLowerCase(); favorites.innerHTML=''; favs.filter(f=> f[0].toLowerCase().includes(q) || f[1].toLowerCase().includes(q)).forEach((f,i)=>{ const div=document.createElement('div'); div.className='item'; div.textContent = '“'+f[0]+'” — '+f[1]; const rm=document.createElement('button'); rm.className='btn'; rm.textContent='Remove'; rm.style.marginLeft='8px'; rm.addEventListener('click', ()=>{ favs.splice(i,1); save(); renderFav(); }); div.appendChild(rm); favorites.appendChild(div); }); }
+      
+      function clearAllFavs(){ favs = []; save(); renderFav(); }
+
+      next.addEventListener('click', random); fav.addEventListener('click', addFav); share.addEventListener('click', copy); search.addEventListener('input', renderFav); clearFav.addEventListener('click', clearAllFavs);
+      show(idx); renderFav();
+    })();
+  </script>
+</body>
+</html>
