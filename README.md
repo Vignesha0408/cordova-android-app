@@ -1,170 +1,65 @@
-# Utility Apps Collection
+# My Projects
 
-A comprehensive collection of 65 interactive utility web applications, each designed to solve specific everyday problems and enhance productivity.
-
-## 📱 Apps Overview
-
-This repository contains 65 standalone HTML applications, each with its own folder and `index.html` file. All apps are built with vanilla HTML, CSS, and JavaScript for maximum compatibility and performance.
-
-## 🚀 Quick Start
-
-1. Clone or download this repository
-2. Navigate to any app folder (e.g., `01_todo_list/`)
-3. Open `index.html` in your web browser
-4. No installation or dependencies required!
-
-## 📋 Complete App List
-
-### Productivity & Organization
-- **01** - [To-do List](01_todo_list/) - Task management with add, edit, delete, and mark complete
-- **02** - [Calculator](02_calculator/) - Full-featured calculator with basic operations
-- **03** - [Notes](03_notes/) - Simple note-taking application
-- **04** - [Alarm Clock](04_alarm_clock/) - Digital alarm clock with time display
-- **05** - [Quiz Game](05_quiz_game/) - Interactive quiz with multiple choice questions
-- **06** - [Pomodoro Timer](06_pomodoro_timer/) - Focus timer with work/break cycles
-- **07** - [Shopping List](07_shopping_list/) - Grocery and shopping list manager
-- **08** - [Meditation](08_meditation/) - Guided meditation timer and tracker
-- **09** - [Photo Editor](09_photo_editor/) - Basic image editing tools
-- **10** - [Mind Map](10_mind_map/) - Visual brainstorming and idea organization
-
-### Time Management
-- **11** - [Timer & Stopwatch](11_timer_stopwatch/) - Multi-purpose timing tool
-- **14** - [Study Timer](14_study_timer/) - Focused study session timer
-- **47** - [Simple Clock](47_simple_clock/) - Clean digital clock display
-- **52** - [Stopwatch](52_stopwatch/) - Precision stopwatch functionality
-- **53** - [Countdown Timer](53_countdown_timer/) - Event countdown timer
-- **55** - [Task Reminder](55_task_reminder/) - Task scheduling and reminders
-
-### Learning & Education
-- **12** - [Coding Interview Questions](12_coding_interview_questions/) - Technical interview prep
-- **15** - [Cloud Computing Quiz](15_cloud_computing_interview_quiz/) - Cloud concepts quiz
-- **17** - [Flask Interview Quiz](17_flask_interview_quiz/) - Python Flask framework quiz
-- **18** - [Problem Solving Quiz](18_problem_solving_interview_quiz/) - Logic and reasoning questions
-- **19** - [Math Practice](19_math_practice/) - Mathematics exercises and problems
-- **32** - [C Syntax Quiz](32_c_syntax_quiz/) - C programming language quiz
-- **33** - [C Loops Quiz](33_c_loops_quiz/) - C programming loops and control structures
-- **37** - [HTML Basics Quiz](37_html_basics_quiz/) - HTML fundamentals quiz
-- **38** - [DSA Arrays Quiz](38_dsa_arrays_quiz/) - Data structures and algorithms quiz
-- **43** - [Programming Quiz Collection](43_programming_quiz_collection/) - Comprehensive programming quiz
-- **44** - [Java OOPs Quiz](44_java_oops_quiz/) - Java object-oriented programming quiz
-- **45** - [CSS Flexbox Practice](45_css_flexbox_practice/) - CSS Flexbox layout exercises
-- **46** - [Git Quiz](46_git_quiz/) - Version control with Git quiz
-- **56** - [Flashcards](56_flashcards/) - Digital flashcard learning system
-
-### Creative & Design
-- **13** - [Simple Drawing](13_simple_drawing/) - Basic drawing canvas
-- **20** - [Photo Collage](20_photo_collage/) - Image collage creator
-- **21** - [Personal Goals](21_personal_goals/) - Goal setting and tracking
-- **22** - [Quick Notes](22_quick_notes/) - Fast note-taking interface
-- **23** - [Simple Paint](23_simple_paint/) - Digital painting application
-- **24** - [Simple Color Picker](24_simple_color_picker/) - Color selection tool
-- **25** - [Palette Creator](25_palette_creator/) - Color palette generator
-- **26** - [Favorite Colors](26_favorite_colors/) - Personal color collection
-- **27** - [Color Notes](27_color_notes/) - Color-coded note system
-- **64** - [Color Palette Viewer](64_color_palette_viewer/) - Color scheme visualization
-
-### Health & Wellness
-- **16** - [Mindfulness](16_mindfulness/) - Meditation and mindfulness exercises
-- **28** - [Water Intake Tracker](28_water_intake_tracker/) - Daily hydration monitoring
-- **34** - [Morning Motivation](34_morning_motivation/) - Daily inspiration and motivation
-- **35** - [Daily Challenges](35_daily_challenges/) - Personal development challenges
-- **36** - [Success Mindset App](36_success_mindset_app/) - Positive thinking and goal achievement
-- **39** - [Life Lessons App](39_life_lessons_app/) - Wisdom and life advice collection
-- **40** - [Workout Motivation](40_workout_motivation/) - Fitness motivation and tracking
-- **57** - [Habit Tracker](57_habit_tracker/) - Daily habit formation and tracking
-- **65** - [Positive Habits](65_positive_habits/) - Building positive lifestyle habits
-
-### Finance & Utilities
-- **29** - [Password Manager](29_password_manager/) - Secure password storage
-- **48** - [Unit Converter](48_unit_converter/) - Measurement unit conversion
-- **49** - [BMI Calculator](49_bmi_calculator/) - Body Mass Index calculator
-- **50** - [Currency Converter](50_currency_converter/) - Real-time currency exchange
-- **51** - [Tip Calculator](51_tip_calculator/) - Restaurant tip calculation
-- **54** - [Expense Tracker](54_expense_tracker/) - Personal finance management
-
-### Communication & Content
-- **30** - [Daily Quotes Pro](30_daily_quotes_pro/) - Inspirational quotes collection
-- **31** - [Inspirational Stories](31_inspirational_stories/) - Motivational story collection
-- **41** - [Web Development Projects](41_web_development_projects/) - Project ideas and templates
-- **42** - [Fullstack Mini Projects](42_fullstack_mini_projects/) - Full-stack development projects
-- **58** - [Weather Widget](58_weather_widget/) - Weather information display
-- **59** - [Random Quote](59_random_quote/) - Random inspirational quotes
-- **60** - [QR Code Generator](60_qr_code_generator/) - QR code creation tool
-- **61** - [URL Shortener](61_url_shortener/) - URL shortening service
-- **62** - [Notes Lite](62_notes_lite/) - Lightweight note-taking app
-- **63** - [Image Compressor](63_image_compressor/) - Image file size optimization
-
-## 🛠️ Technical Features
-
-- **Pure HTML/CSS/JavaScript** - No external dependencies
-- **Responsive Design** - Works on desktop, tablet, and mobile
-- **Local Storage** - Data persistence across sessions
-- **Modern UI/UX** - Clean, intuitive interfaces
-- **Cross-browser Compatible** - Works in all modern browsers
-- **Offline Ready** - No internet connection required
-
-## 📁 Project Structure
-
-```
-html_collection/
-├── 01_todo_list/
-│   └── index.html
-├── 02_calculator/
-│   └── index.html
-├── 03_notes/
-│   └── index.html
-├── ...
-└── 65_positive_habits/
-    └── index.html
-```
-
-## 🎯 Use Cases
-
-- **Personal Productivity** - Task management, time tracking, goal setting
-- **Learning & Education** - Quizzes, flashcards, study timers
-- **Health & Wellness** - Habit tracking, meditation, motivation
-- **Creative Projects** - Drawing, color tools, photo editing
-- **Professional Development** - Interview prep, skill assessment
-- **Daily Utilities** - Calculators, converters, note-taking
-
-## 🚀 Getting Started
-
-1. **Choose an app** from the list above
-2. **Navigate to the folder** (e.g., `01_todo_list/`)
-3. **Open `index.html`** in your web browser
-4. **Start using** the application immediately!
-
-## 📱 Mobile Friendly
-
-All apps are designed to work seamlessly on mobile devices with touch-friendly interfaces and responsive layouts.
-
-## 🔧 Customization
-
-Each app is self-contained and can be easily customized by modifying the HTML, CSS, and JavaScript files directly.
-
-## 📄 License
-
-This project is open source and available under the MIT License.
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to:
-- Report bugs
-- Suggest new features
-- Submit pull requests
-- Improve existing apps
-
-## 📞 Contact
-
-- **Email**: chetanpandith04@gmail.com
-- **Phone**: +91 8277490104
-- **Location**: Hosanagara, Karnataka, India
-- **LinkedIn**: [linkedin.com/in/vignesha-u-g-45551a285](https://linkedin.com/in/vignesha-u-g-45551a285)
-- **GitHub**: [github.com/Vignesha0408](https://github.com/Vignesha0408)
-
----
-
-**Total Apps**: 65 | **Categories**: 6 | **Technologies**: HTML5, CSS3, JavaScript ES6+
-
-*Last Updated: September 2025*
-
+| Serial No. | Project Name                              | Deployed Link | Repository Link |
+|------------|-------------------------------------------|--------------|---------------|
+| 1          | Todo list                                 | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/01_todo_list/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/01_todo_list/index.html) |
+| 2          | Calculator                                | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/02_calculator/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/02_calculator/index.html) |
+| 3          | Notes                                     | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/03_notes/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/03_notes/index.html) |
+| 4          | Alarm clock                               | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/04_alarm_clock/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/04_alarm_clock/index.html) |
+| 5          | Quiz game                                 | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/05_quiz_game/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/05_quiz_game/index.html) |
+| 6          | Pomodoro timer                            | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/06_pomodoro_timer/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/06_pomodoro_timer/index.html) |
+| 7          | Shopping list                             | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/07_shopping_list/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/07_shopping_list/index.html) |
+| 8          | Meditation                                | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/08_meditation/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/08_meditation/index.html) |
+| 9          | Photo editor                              | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/09_photo_editor/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/09_photo_editor/index.html) |
+| 10         | Mind map                                 | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/10_mind_map/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/10_mind_map/index.html) |
+| 11         | Timer stopwatch                          | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/11_timer_stopwatch/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/11_timer_stopwatch/index.html) |
+| 12         | Coding interview questions               | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/12_coding_interview_questions/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/12_coding_interview_questions/index.html) |
+| 13         | Simple drawing                           | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/13_simple_drawing/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/13_simple_drawing/index.html) |
+| 14         | Study timer                              | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/14_study_timer/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/14_study_timer/index.html) |
+| 15         | Cloud computing interview quiz          | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/15_cloud_computing_interview_quiz/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/15_cloud_computing_interview_quiz/index.html) |
+| 16         | Mindfulness                              | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/16_mindfulness/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/16_mindfulness/index.html) |
+| 17         | Flask interview quiz                    | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/17_flask_interview_quiz/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/17_flask_interview_quiz/index.html) |
+| 18         | Problem solving interview quiz          | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/18_problem_solving_interview_quiz/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/18_problem_solving_interview_quiz/index.html) |
+| 19         | Math practice                           | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/19_math_practice/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/19_math_practice/index.html) |
+| 20         | Photo collage                           | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/20_photo_collage/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/20_photo_collage/index.html) |
+| 21         | Personal goals                          | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/21_personal_goals/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/21_personal_goals/index.html) |
+| 22         | Quick notes                             | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/22_quick_notes/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/22_quick_notes/index.html) |
+| 23         | Simple paint                           | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/23_simple_paint/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/23_simple_paint/index.html) |
+| 24         | Simple color picker                    | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/24_simple_color_picker/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/24_simple_color_picker/index.html) |
+| 25         | Palette creator                        | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/25_palette_creator/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/25_palette_creator/index.html) |
+| 26         | Favorite colors                        | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/26_favorite_colors/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/26_favorite_colors/index.html) |
+| 27         | Color notes                           | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/27_color_notes/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/27_color_notes/index.html) |
+| 28         | Water intake tracker                  | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/28_water_intake_tracker/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/28_water_intake_tracker/index.html) |
+| 29         | Password manager                      | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/29_password_manager/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/29_password_manager/index.html) |
+| 30         | Daily quotes pro                      | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/30_daily_quotes_pro/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/30_daily_quotes_pro/index.html) |
+| 31         | Inspirational stories                | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/31_inspirational_stories/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/31_inspirational_stories/index.html) |
+| 32         | C syntax quiz                       | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/32_c_syntax_quiz/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/32_c_syntax_quiz/index.html) |
+| 33         | C loops quiz                        | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/33_c_loops_quiz/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/33_c_loops_quiz/index.html) |
+| 34         | Morning motivation                 | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/34_morning_motivation/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/34_morning_motivation/index.html) |
+| 35         | Daily challenges                  | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/35_daily_challenges/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/35_daily_challenges/index.html) |
+| 36         | Success mindset app             | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/36_success_mindset_app/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/36_success_mindset_app/index.html) |
+| 37         | Html basics quiz                 | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/37_html_basics_quiz/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/37_html_basics_quiz/index.html) |
+| 38         | Dsa arrays quiz                 | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/38_dsa_arrays_quiz/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/38_dsa_arrays_quiz/index.html) |
+| 39         | Life lessons app               | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/39_life_lessons_app/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/39_life_lessons_app/index.html) |
+| 40         | Workout motivation           | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/40_workout_motivation/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/40_workout_motivation/index.html) |
+| 41         | Web development projects      | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/41_web_development_projects/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/41_web_development_projects/index.html) |
+| 42         | Fullstack mini projects      | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/42_fullstack_mini_projects/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/42_fullstack_mini_projects/index.html) |
+| 43         | Programming quiz collection   | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/43_programming_quiz_collection/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/43_programming_quiz_collection/index.html) |
+| 44         | Java oops quiz                   | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/44_java_oops_quiz/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/44_java_oops_quiz/index.html) |
+| 45         | Css flexbox practice           | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/45_css_flexbox_practice/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/45_css_flexbox_practice/index.html) |
+| 46         | Git quiz                            | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/46_git_quiz/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/46_git_quiz/index.html) |
+| 47         | Simple clock                     | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/47_simple_clock/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/47_simple_clock/index.html) |
+| 48         | Unit converter                  | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/48_unit_converter/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/48_unit_converter/index.html) |
+| 49         | Bmi calculator                  | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/49_bmi_calculator/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/49_bmi_calculator/index.html) |
+| 50         | Currency converter            | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/50_currency_converter/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/50_currency_converter/index.html) |
+| 51         | Tip calculator                  | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/51_tip_calculator/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/51_tip_calculator/index.html) |
+| 52         | Stopwatch                        | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/52_stopwatch/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/52_stopwatch/index.html) |
+| 53         | Countdown timer              | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/53_countdown_timer/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/53_countdown_timer/index.html) |
+| 54         | Expense tracker                 | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/54_expense_tracker/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/54_expense_tracker/index.html) |
+| 55         | Task reminder                    | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/55_task_reminder/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/55_task_reminder/index.html) |
+| 56         | Flashcards                        | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/56_flashcards/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/56_flashcards/index.html) |
+| 57         | Habit tracker                    | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/57_habit_tracker/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/57_habit_tracker/index.html) |
+| 58         | Weather widget                  | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/58_weather_widget/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/58_weather_widget/index.html) |
+| 59         | Random quote                    | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/59_random_quote/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/59_random_quote/index.html) |
+| 60         | Qr code generator             | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/60_qr_code_generator/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob/main/html_collection/60_qr_code_generator/index.html) |
+| 61         | Url shortener                  | [View](https://vignesha0408.github.io/cordova-android-app/html_collection/61_url_shortener/) | [View](https://github.com/Vignesha0408/cordova-android-app/blob
