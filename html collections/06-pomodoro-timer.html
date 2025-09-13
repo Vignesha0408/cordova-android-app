@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pomodoro Timer</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --accent: #ef4444;
+      --accent-2: #22c55e;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --ring: rgba(239, 68, 68, 0.25);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      background: radial-gradient(1000px 600px at 20% 10%, #111827, #0b1022 60%, #050814);
+      color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    .app {
+      width: min(680px, 92vw);
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px; padding: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+    h1 { margin: 0 0 12px 0; font-size: 28px; letter-spacing: 0.4px; }
+    .subtitle { color: var(--muted); margin-bottom: 20px; }
+
+    .tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+    .tab {
+      flex: 1; padding: 10px 12px; text-align: center; cursor: pointer;
+      border-radius: 10px; background: rgba(255,255,255,0.04);
+      color: var(--muted); border: 1px solid rgba(255,255,255,0.06);
+      user-select: none; transition: 160ms;
+    }
+    .tab.active { color: var(--text); background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
+
+    .timer {
+      display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 16px;
+      background: var(--panel); border: 1px solid rgba(255,255,255,0.06);
+      padding: 18px; border-radius: 14px; position: relative; overflow: hidden;
+    }
+
+    .circle {
+      width: 200px; aspect-ratio: 1; border-radius: 50%; border: 10px solid rgba(255,255,255,0.06);
+      display: grid; place-items: center; position: relative;
+      background: radial-gradient(200px 120px at 50% 0%, rgba(255,255,255,0.06), rgba(255,255,255,0));
+    }
+    .ring { position: absolute; inset: -10px; border-radius: 50%; border: 10px solid var(--ring); clip-path: polygon(50% 50%, 50% 0, 100% 0, 100% 100%, 0 100%, 0 0, 50% 0); transform: rotate(-90deg); }
+    .time { font-size: 44px; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+
+    .controls { display: grid; gap: 10px; }
+    .btn {
+      padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.06); color: var(--text); cursor: pointer;
+      transition: 150ms; font-weight: 600; letter-spacing: 0.3px; min-width: 120px;
+    }
+    .btn:hover { transform: translateY(-1px); background: rgba(255,255,255,0.1); }
+    .btn.primary { background: linear-gradient(180deg, #ef4444, #c02626); border-color: rgba(239,68,68,0.5); }
+    .btn.success { background: linear-gradient(180deg, #22c55e, #16a34a); border-color: rgba(34,197,94,0.5); }
+
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
+    .field { background: var(--panel); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px; }
+    .label { color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+    .number {
+      width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04); color: var(--text); font-size: 14px;
+    }
+    .session { margin-top: 16px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Pomodoro Timer</h1>
+    <div class="subtitle">Stay focused with work and break intervals</div>
+
+    <div class="tabs" id="modeTabs">
+      <div class="tab active" data-mode="work">Work</div>
+      <div class="tab" data-mode="short">Short Break</div>
+      <div class="tab" data-mode="long">Long Break</div>
+    </div>
+
+    <div class="timer">
+      <div class="circle">
+        <svg class="ring" width="220" height="220" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="45" stroke="var(--ring)" stroke-width="10" fill="none" stroke-dasharray="282.743" stroke-dashoffset="0" id="progress"></circle>
+        </svg>
+        <div class="time" id="time">25:00</div>
+      </div>
+      <div class="controls">
+        <button class="btn primary" id="startBtn">Start</button>
+        <button class="btn" id="pauseBtn">Pause</button>
+        <button class="btn success" id="resetBtn">Reset</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="field">
+        <div class="label">Work (minutes)</div>
+        <input type="number" class="number" id="workInput" min="1" max="180" value="25" />
+      </div>
+      <div class="field">
+        <div class="label">Short Break (minutes)</div>
+        <input type="number" class="number" id="shortInput" min="1" max="60" value="5" />
+      </div>
+      <div class="field">
+        <div class="label">Long Break (minutes)</div>
+        <input type="number" class="number" id="longInput" min="1" max="60" value="15" />
+      </div>
+    </div>
+
+    <div class="session" id="sessionInfo">Session: Work • Cycle 1</div>
+  </div>
+
+  <script>
+    (function(){
+      const timeEl = document.getElementById('time');
+      const progressEl = document.getElementById('progress');
+      const startBtn = document.getElementById('startBtn');
+      const pauseBtn = document.getElementById('pauseBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const workInput = document.getElementById('workInput');
+      const shortInput = document.getElementById('shortInput');
+      const longInput = document.getElementById('longInput');
+      const sessionInfo = document.getElementById('sessionInfo');
+      const tabs = document.getElementById('modeTabs');
+
+      const CIRC = 2 * Math.PI * 45; // 2πr with r = 45
+      let mode = 'work';
+      let seconds = 25 * 60; // default
+      let timer = null;
+      let cycle = 1;
+
+      function setMode(newMode){
+        mode = newMode;
+        [...tabs.children].forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+        const mins = getMinutesForMode(mode);
+        seconds = mins * 60; update(); updateProgress(1);
+        sessionInfo.textContent = `Session: ${labelForMode(mode)} • Cycle ${cycle}`;
+      }
+
+      function labelForMode(m){
+        if(m === 'work') return 'Work';
+        if(m === 'short') return 'Short Break';
+        return 'Long Break';
+      }
+
+      function getMinutesForMode(m){
+        if(m === 'work') return clampInt(workInput.value, 1, 180) || 25;
+        if(m === 'short') return clampInt(shortInput.value, 1, 60) || 5;
+        return clampInt(longInput.value, 1, 60) || 15;
+      }
+
+      function clampInt(v, min, max){
+        const n = Math.floor(Number(v));
+        if(Number.isNaN(n)) return min;
+        return Math.min(max, Math.max(min, n));
+      }
+
+      function formatTime(total){
+        const m = Math.floor(total / 60).toString().padStart(2, '0');
+        const s = Math.floor(total % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+      }
+
+      function update(){ timeEl.textContent = formatTime(seconds); }
+
+      function updateProgress(ratio){
+        const offset = CIRC * (1 - ratio);
+        progressEl.setAttribute('stroke-dasharray', CIRC.toFixed(3));
+        progressEl.setAttribute('stroke-dashoffset', offset.toFixed(3));
+      }
+
+      function start(){
+        if(timer) return; // prevent double start
+        const total = seconds;
+        const startAt = Date.now();
+        const endAt = startAt + total * 1000;
+        tick();
+        timer = setInterval(tick, 250);
+        function tick(){
+          const now = Date.now();
+          seconds = Math.max(0, Math.round((endAt - now) / 1000));
+          update();
+          const ratio = total === 0 ? 1 : (1 - (seconds / total));
+          updateProgress(ratio);
+          if(seconds <= 0){
+            clearInterval(timer); timer = null; nextSession();
+          }
+        }
+      }
+
+      function pause(){ if(timer){ clearInterval(timer); timer = null; } }
+      function reset(){ pause(); setMode(mode); }
+
+      function nextSession(){
+        if(mode === 'work'){
+          cycle++;
+          // Every 4th cycle give a long break
+          setMode((cycle % 4 === 0) ? 'long' : 'short');
+        } else {
+          setMode('work');
+        }
+        // Auto start next session
+        start();
+      }
+
+      startBtn.addEventListener('click', start);
+      pauseBtn.addEventListener('click', pause);
+      resetBtn.addEventListener('click', reset);
+
+      tabs.addEventListener('click', (e)=>{
+        const t = e.target.closest('.tab'); if(!t) return;
+        pause();
+        setMode(t.dataset.mode);
+      });
+
+      workInput.addEventListener('change', ()=>{ if(mode==='work'){ setMode('work'); }});
+      shortInput.addEventListener('change', ()=>{ if(mode==='short'){ setMode('short'); }});
+      longInput.addEventListener('change', ()=>{ if(mode==='long'){ setMode('long'); }});
+
+      // init
+      setMode('work');
+    })();
+  </script>
+</body>
+</html>
