@@ -1,7 +1,7 @@
 ﻿----------
 App Name:
 ----------
-    Todo List
+ Todo List
 ----------
 
 App ID:
@@ -38,3 +38,4 @@ Pranesh Shetty
 Email:  shettypranesh566@gmail.com
 LinkedIn: linkedin.com/in/pranesh-shetty-8510b9309/
 -----------
+
